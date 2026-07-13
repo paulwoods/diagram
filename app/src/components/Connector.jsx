@@ -60,16 +60,20 @@ export default function Connector({
   const midpoint = getPathMidpoint(pathD)
 
   return (
-    <g key={connector.id}>
+    <g
+      key={connector.id}
+      onMouseDown={(e) => onClick(connector.id, e)}
+      onDoubleClick={(e) => onDoubleClick(connector.id, e, connector.label)}
+      pointerEvents="bounding-box"
+      style={{ cursor: 'pointer' }}
+    >
       <path
         d={pathD}
         fill="none"
         stroke="var(--connector-color)"
         strokeWidth="2"
+        strokeDasharray={isSelected ? '5,5' : 'none'}
         markerEnd="url(#arrowhead)"
-        pointerEvents="stroke"
-        onClick={onClick}
-        style={{ cursor: 'pointer' }}
       />
 
       {/* Selection indicator */}
@@ -121,10 +125,7 @@ export default function Connector({
         fill="none"
         stroke="transparent"
         strokeWidth="20"
-        pointerEvents="stroke"
-        onClick={onClick}
-        onDoubleClick={(e) => onDoubleClick(connector.id, e, connector.label)}
-        style={{ cursor: 'pointer' }}
+        pointerEvents="auto"
       />
     </g>
   )
