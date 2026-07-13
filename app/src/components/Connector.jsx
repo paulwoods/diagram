@@ -78,8 +78,8 @@ export default function Connector({
           d={pathD}
           fill="none"
           stroke="#3b82f6"
-          strokeWidth="4"
-          opacity="0.3"
+          strokeWidth="5"
+          opacity="0.5"
           pointerEvents="none"
           markerEnd="url(#arrowhead)"
         />
@@ -120,10 +120,11 @@ export default function Connector({
         d={pathD}
         fill="none"
         stroke="transparent"
-        strokeWidth="10"
+        strokeWidth="20"
         pointerEvents="stroke"
         onClick={onClick}
         onDoubleClick={(e) => onDoubleClick(connector.id, e, connector.label)}
+        style={{ cursor: 'pointer' }}
       />
     </g>
   )
