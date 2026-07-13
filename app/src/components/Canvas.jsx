@@ -43,8 +43,8 @@ export default function Canvas({
   const handleCanvasClick = (e) => {
     if (selectedShapeType) {
       const rect = svgRef.current.getBoundingClientRect()
-      let x = e.clientX - rect.left
-      let y = e.clientY - rect.top
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
       onAddShape({ x, y })
     }
   }
@@ -57,13 +57,36 @@ export default function Canvas({
     e.preventDefault()
   }
 
+  const isPointInShape = (point, shape) => {
+    const SHAPE_WIDTH = 120
+    const SHAPE_HEIGHT = 80
+    const cx = shape.x + SHAPE_WIDTH / 2
+    const cy = shape.y + SHAPE_HEIGHT / 2
+
+    // Simple AABB collision for now (works for rectangles)
+    // For other shapes, use bounding box which is close enough
+    return (
+      point.x >= shape.x - 5 &&
+      point.x <= shape.x + SHAPE_WIDTH + 5 &&
+      point.y >= shape.y - 5 &&
+      point.y <= shape.y + SHAPE_HEIGHT + 5
+    )
+  }
+
   const handleSvgMouseMove = (e) => {
     if (connectionStart) {
       const rect = svgRef.current.getBoundingClientRect()
-      setDragEndpoint({
+      const endpoint = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
-      })
+      }
+      setDragEndpoint(endpoint)
+
+      // Find which shape (if any) the cursor is over
+      const hoveredShape = shapes.find(
+        (shape) => shape.id !== connectionStart && isPointInShape(endpoint, shape)
+      )
+      setHoveredShapeId(hoveredShape?.id || null)
     }
   }
 
@@ -77,15 +100,6 @@ export default function Canvas({
     e.stopPropagation()
   }
 
-  const handleShapeMouseEnter = (shapeId) => {
-    if (connectionStart) {
-      setHoveredShapeId(shapeId)
-    }
-  }
-
-  const handleShapeMouseLeave = () => {
-    setHoveredShapeId(null)
-  }
 
   const handleShapeDoubleClick = (shapeId, e, currentLabel) => {
     e.stopPropagation()
@@ -187,8 +201,6 @@ export default function Canvas({
                 isConnecting={connectionStart === shape.id}
                 isHovered={hoveredShapeId === shape.id}
                 onMouseDown={handleShapeMouseDown}
-                onMouseEnter={handleShapeMouseEnter}
-                onMouseLeave={handleShapeMouseLeave}
                 onDoubleClick={handleShapeDoubleClick}
                 onEditSubmit={handleEditSubmit}
                 isEditing={editingId === shape.id}

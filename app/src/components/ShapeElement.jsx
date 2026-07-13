@@ -85,8 +85,6 @@ export default function ShapeElement({
   isConnecting,
   isHovered,
   onMouseDown,
-  onMouseEnter,
-  onMouseLeave,
   onDoubleClick,
   onEditSubmit,
   isEditing,
@@ -99,8 +97,6 @@ export default function ShapeElement({
     <g
       key={id}
       onMouseDown={(e) => onMouseDown(id, e)}
-      onMouseEnter={() => onMouseEnter(id)}
-      onMouseLeave={onMouseLeave}
       onDoubleClick={(e) => onDoubleClick(id, e, label)}
       style={{ cursor: 'pointer' }}
     >
