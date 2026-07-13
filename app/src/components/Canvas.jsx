@@ -173,6 +173,11 @@ export default function Canvas({
       })
     }
 
+    // Right button = start connection
+    if (e.button === 2) {
+      setConnectionStart(shapeId)
+    }
+
     e.preventDefault()
   }
 
