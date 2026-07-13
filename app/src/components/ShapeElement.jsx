@@ -1,4 +1,5 @@
 import { CANVAS_CONFIG } from '../constants/CANVAS_CONFIG'
+import { getConnectionPoints } from '../modules/ShapeGeometry'
 
 function renderShapeGeometry(type, x, y, color) {
   const width = CANVAS_CONFIG.SHAPE.width
@@ -94,15 +95,9 @@ export default function ShapeElement({
   onConnectionPointMouseDown,
 }) {
   const { id, type, x, y, label, color } = shape
-  const cx = x + 60
-  const cy = y + 40
-
-  const connectionPoints = [
-    { id: 'left', x: x, y: cy },
-    { id: 'top', x: cx, y: y },
-    { id: 'right', x: x + 120, y: cy },
-    { id: 'bottom', x: cx, y: y + 80 },
-  ]
+  const connectionPoints = getConnectionPoints(shape)
+  const cx = x + CANVAS_CONFIG.SHAPE.width / 2
+  const cy = y + CANVAS_CONFIG.SHAPE.height / 2
 
   return (
     <g
@@ -145,8 +140,8 @@ export default function ShapeElement({
       {/* Connection origin indicator */}
       {isConnecting && (
         <circle
-          cx={x + 60}
-          cy={y + 40}
+          cx={cx}
+          cy={cy}
           r="5"
           fill="#3b82f6"
           pointerEvents="none"
@@ -155,8 +150,8 @@ export default function ShapeElement({
 
       {/* Label text */}
       <text
-        x={x + 60}
-        y={y + 45}
+        x={cx}
+        y={cy + 5}
         textAnchor="middle"
         dominantBaseline="middle"
         fontSize="14"
