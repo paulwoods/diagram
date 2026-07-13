@@ -79,10 +79,10 @@ export default function Connector({
       {connector.label && (
         <>
           <rect
-            x={midpoint.x - 35}
-            y={midpoint.y - 14}
-            width="70"
-            height="28"
+            x={midpoint.x - CANVAS_CONFIG.CONNECTOR_LABEL.width / 2}
+            y={midpoint.y - CANVAS_CONFIG.CONNECTOR_LABEL.height / 2}
+            width={CANVAS_CONFIG.CONNECTOR_LABEL.width}
+            height={CANVAS_CONFIG.CONNECTOR_LABEL.height}
             fill="#fff"
             stroke="#d1d5db"
             strokeWidth="1"
