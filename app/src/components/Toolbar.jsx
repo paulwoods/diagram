@@ -9,7 +9,7 @@ const SHAPES = [
   { id: 'circle', label: 'Circle', icon: '●' },
 ]
 
-export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, onImport, zoomLevel = 100 }) {
+export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, onImport, zoomLevel = 100, isDarkMode = false, onToggleTheme }) {
   return (
     <div className="toolbar">
       <div className="shape-buttons">
@@ -27,6 +27,9 @@ export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, on
 
       <div className="file-buttons">
         <div className="zoom-indicator">Zoom: {zoomLevel}%</div>
+        <button className="file-btn" onClick={onToggleTheme} title={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}>
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
         <button className="file-btn" onClick={onExport} title="Export diagram as JSON">
           Export
         </button>

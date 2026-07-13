@@ -1,6 +1,42 @@
+:root {
+  --bg-primary: #fff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --button-bg: #fff;
+  --button-hover: #f3f4f6;
+  --button-active: #e5e7eb;
+  --canvas-bg: #f9fafb;
+  --shape-border: #1f2937;
+  --selection-color: #3b82f6;
+  --hover-color: #10b981;
+  --connector-color: #4b5563;
+  --arrowhead-color: #1f2937;
+}
+
+.app.dark-mode {
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+  --button-bg: #374151;
+  --button-hover: #4b5563;
+  --button-active: #6b7280;
+  --canvas-bg: #111827;
+  --shape-border: #e5e7eb;
+  --selection-color: #60a5fa;
+  --hover-color: #10b981;
+  --connector-color: #9ca3af;
+  --arrowhead-color: #e5e7eb;
+}
+
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #fff;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s, color 0.2s;
 }

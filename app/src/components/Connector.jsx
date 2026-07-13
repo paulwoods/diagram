@@ -64,7 +64,7 @@ export default function Connector({
       <path
         d={pathD}
         fill="none"
-        stroke="#4b5563"
+        stroke="var(--connector-color)"
         strokeWidth="2"
         markerEnd="url(#arrowhead)"
         pointerEvents="stroke"

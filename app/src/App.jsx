@@ -18,8 +18,18 @@ export default function App() {
   const [selectedShapeType, setSelectedShapeType] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [zoomLevel, setZoomLevel] = useState(100)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme-mode')
+    return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
   const shapeIdRef = useRef(1)
   const connectorIdRef = useRef(1)
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode
+    setIsDarkMode(newMode)
+    localStorage.setItem('theme-mode', newMode ? 'dark' : 'light')
+  }
 
   const handleAddShape = (pos) => {
     if (!selectedShapeType) return
@@ -115,13 +125,15 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
       <Toolbar
         selectedShapeType={selectedShapeType}
         onShapeSelect={setSelectedShapeType}
         onExport={handleExport}
         onImport={handleImport}
         zoomLevel={zoomLevel}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
       />
       <Canvas
         shapes={shapes}

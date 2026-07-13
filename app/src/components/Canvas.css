@@ -2,15 +2,17 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: #fff;
+  background: var(--canvas-bg);
+  transition: background-color 0.2s;
 }
 
 .canvas {
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--canvas-bg);
   cursor: default;
   display: block;
+  transition: background-color 0.2s;
 }
 
 .edit-modal-overlay {
@@ -27,28 +29,32 @@
 }
 
 .edit-modal {
-  background: #fff;
+  background: var(--bg-primary);
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   max-width: 400px;
   width: 90%;
+  transition: background-color 0.2s;
 }
 
 .edit-modal h3 {
   margin-bottom: 16px;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
 }
 
 .edit-modal input {
   width: 100%;
   padding: 8px 12px;
   margin-bottom: 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.2s;
 }
 
 .edit-modal input:focus {
@@ -65,12 +71,13 @@
 
 .modal-buttons button {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  background: #fff;
+  border: 1px solid var(--border-color);
+  background: var(--button-bg);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
+  color: var(--text-primary);
 }
 
 .modal-buttons button:first-child {
@@ -84,5 +91,5 @@
 }
 
 .modal-buttons button:last-child:hover {
-  background: #f3f4f6;
+  background: var(--button-hover);
 }

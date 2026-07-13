@@ -312,7 +312,7 @@ export default function Canvas({
                 refY="3"
                 orient="auto"
               >
-                <polygon points="0 0, 10 3, 0 6" fill="#1f2937" />
+                <polygon points="0 0, 10 3, 0 6" fill="var(--arrowhead-color)" />
               </marker>
             </defs>
 
