@@ -20,6 +20,7 @@ export default function Canvas({
   const svgRef = useRef(null)
   const [connectionStart, setConnectionStart] = useState(null)
   const [dragEndpoint, setDragEndpoint] = useState(null)
+  const [hoveredShapeId, setHoveredShapeId] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState('')
   const [editingType, setEditingType] = useState(null)
@@ -40,10 +41,10 @@ export default function Canvas({
   }, [selectedId, shapes, connectors, onDeleteShape, onDeleteConnector])
 
   const handleCanvasClick = (e) => {
-    if (selectedShapeType && e.target === svgRef.current) {
+    if (selectedShapeType) {
       const rect = svgRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
+      let x = e.clientX - rect.left
+      let y = e.clientY - rect.top
       onAddShape({ x, y })
     }
   }
@@ -53,6 +54,7 @@ export default function Canvas({
     onSelectShape(shapeId)
     setConnectionStart(shapeId)
     setDragEndpoint(null)
+    e.preventDefault()
   }
 
   const handleSvgMouseMove = (e) => {
@@ -66,18 +68,23 @@ export default function Canvas({
   }
 
   const handleSvgMouseUp = (e) => {
-    e.stopPropagation()
-    setConnectionStart(null)
-    setDragEndpoint(null)
-  }
-
-  const handleShapeMouseUp = (targetId, e) => {
-    e.stopPropagation()
-    if (connectionStart && connectionStart !== targetId) {
-      onAddConnector(connectionStart, targetId)
+    if (connectionStart && hoveredShapeId && hoveredShapeId !== connectionStart) {
+      onAddConnector(connectionStart, hoveredShapeId)
     }
     setConnectionStart(null)
     setDragEndpoint(null)
+    setHoveredShapeId(null)
+    e.stopPropagation()
+  }
+
+  const handleShapeMouseEnter = (shapeId) => {
+    if (connectionStart) {
+      setHoveredShapeId(shapeId)
+    }
+  }
+
+  const handleShapeMouseLeave = () => {
+    setHoveredShapeId(null)
   }
 
   const handleShapeDoubleClick = (shapeId, e, currentLabel) => {
@@ -117,6 +124,8 @@ export default function Canvas({
           <svg
             ref={svgRef}
             className="canvas"
+            width="4000"
+            height="3000"
             onClick={handleCanvasClick}
             onMouseMove={handleSvgMouseMove}
             onMouseUp={handleSvgMouseUp}
@@ -176,8 +185,10 @@ export default function Canvas({
                 shape={shape}
                 isSelected={selectedId === shape.id}
                 isConnecting={connectionStart === shape.id}
+                isHovered={hoveredShapeId === shape.id}
                 onMouseDown={handleShapeMouseDown}
-                onMouseUp={handleShapeMouseUp}
+                onMouseEnter={handleShapeMouseEnter}
+                onMouseLeave={handleShapeMouseLeave}
                 onDoubleClick={handleShapeDoubleClick}
                 onEditSubmit={handleEditSubmit}
                 isEditing={editingId === shape.id}

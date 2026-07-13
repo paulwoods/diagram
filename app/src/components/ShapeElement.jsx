@@ -83,8 +83,10 @@ export default function ShapeElement({
   shape,
   isSelected,
   isConnecting,
+  isHovered,
   onMouseDown,
-  onMouseUp,
+  onMouseEnter,
+  onMouseLeave,
   onDoubleClick,
   onEditSubmit,
   isEditing,
@@ -97,8 +99,10 @@ export default function ShapeElement({
     <g
       key={id}
       onMouseDown={(e) => onMouseDown(id, e)}
-      onMouseUp={(e) => onMouseUp(id, e)}
+      onMouseEnter={() => onMouseEnter(id)}
+      onMouseLeave={onMouseLeave}
       onDoubleClick={(e) => onDoubleClick(id, e, label)}
+      style={{ cursor: 'pointer' }}
     >
       {renderShapeGeometry(type, x, y, color)}
 
@@ -113,6 +117,20 @@ export default function ShapeElement({
           stroke="#3b82f6"
           strokeWidth="2"
           strokeDasharray="4,4"
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Hover indicator during connection */}
+      {isHovered && (
+        <rect
+          x={x - 3}
+          y={y - 3}
+          width={120 + 6}
+          height={80 + 6}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="3"
           pointerEvents="none"
         />
       )}
