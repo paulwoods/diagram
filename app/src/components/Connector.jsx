@@ -1,7 +1,18 @@
-function getShapeCenter(shape) {
+function getConnectionPointCoords(shape, pointId) {
   const cx = shape.x + 60
   const cy = shape.y + 40
-  return { cx, cy }
+  switch (pointId) {
+    case 'left':
+      return { x: shape.x, y: cy }
+    case 'top':
+      return { x: cx, y: shape.y }
+    case 'right':
+      return { x: shape.x + 120, y: cy }
+    case 'bottom':
+      return { x: cx, y: shape.y + 80 }
+    default:
+      return { x: cx, y: cy }
+  }
 }
 
 function generateCurvedPath(x1, y1, x2, y2) {
@@ -43,9 +54,9 @@ export default function Connector({
 
   if (!sourceShape || !targetShape) return null
 
-  const sourceCenter = getShapeCenter(sourceShape)
-  const targetCenter = getShapeCenter(targetShape)
-  const pathD = generateCurvedPath(sourceCenter.cx, sourceCenter.cy, targetCenter.cx, targetCenter.cy)
+  const sourceCoord = getConnectionPointCoords(sourceShape, connector.sourcePoint)
+  const targetCoord = getConnectionPointCoords(targetShape, connector.targetPoint)
+  const pathD = generateCurvedPath(sourceCoord.x, sourceCoord.y, targetCoord.x, targetCoord.y)
   const midpoint = getPathMidpoint(pathD)
 
   return (

@@ -23,6 +23,7 @@ export default function Canvas({
   const [connectionPointId, setConnectionPointId] = useState(null)
   const [dragEndpoint, setDragEndpoint] = useState(null)
   const [hoveredShapeId, setHoveredShapeId] = useState(null)
+  const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState('')
   const [editingType, setEditingType] = useState(null)
@@ -134,6 +135,14 @@ export default function Canvas({
         (shape) => shape.id !== connectionStart && isPointInShape(endpoint, shape)
       )
       setHoveredShapeId(hoveredShape?.id || null)
+
+      // Check if hovering over a connection point on the target shape
+      if (hoveredShape) {
+        const pointId = findHoveredConnectionPoint(endpoint, hoveredShape.id)
+        setHoveredConnectionPoint(pointId)
+      } else {
+        setHoveredConnectionPoint(null)
+      }
     }
   }
 
@@ -149,13 +158,14 @@ export default function Canvas({
       setPanStart(null)
     }
 
-    if (connectionStart && hoveredShapeId && hoveredShapeId !== connectionStart) {
-      onAddConnector(connectionStart, hoveredShapeId)
+    if (connectionStart && hoveredShapeId && hoveredShapeId !== connectionStart && hoveredConnectionPoint) {
+      onAddConnector(connectionStart, hoveredShapeId, connectionPointId, hoveredConnectionPoint)
     }
     setConnectionStart(null)
     setConnectionPointId(null)
     setDragEndpoint(null)
     setHoveredShapeId(null)
+    setHoveredConnectionPoint(null)
   }
 
   const handleShapeMouseDown = (shapeId, e) => {
@@ -183,6 +193,40 @@ export default function Canvas({
     setConnectionStart(shapeId)
     setConnectionPointId(pointId)
     e.preventDefault()
+  }
+
+  const getConnectionPointCoords = (shape, pointId) => {
+    const cx = shape.x + 60
+    const cy = shape.y + 40
+    switch (pointId) {
+      case 'left':
+        return { x: shape.x, y: cy }
+      case 'top':
+        return { x: cx, y: shape.y }
+      case 'right':
+        return { x: shape.x + 120, y: cy }
+      case 'bottom':
+        return { x: cx, y: shape.y + 80 }
+      default:
+        return { x: cx, y: cy }
+    }
+  }
+
+  const findHoveredConnectionPoint = (point, targetShapeId) => {
+    const shape = shapes.find((s) => s.id === targetShapeId)
+    if (!shape) return null
+
+    const pointIds = ['left', 'top', 'right', 'bottom']
+    const hitRadius = 8
+
+    for (const pointId of pointIds) {
+      const coords = getConnectionPointCoords(shape, pointId)
+      const distance = Math.sqrt((point.x - coords.x) ** 2 + (point.y - coords.y) ** 2)
+      if (distance <= hitRadius) {
+        return pointId
+      }
+    }
+    return null
   }
 
   const isPointInShape = (point, shape) => {
@@ -293,31 +337,14 @@ export default function Canvas({
               const startShape = shapes.find((s) => s.id === connectionStart)
               if (!startShape) return null
 
-              const getConnectionPointCoords = () => {
-                const cx = startShape.x + 60
-                const cy = startShape.y + 40
-                switch (connectionPointId) {
-                  case 'left':
-                    return { x: startShape.x, y: cy }
-                  case 'top':
-                    return { x: cx, y: startShape.y }
-                  case 'right':
-                    return { x: startShape.x + 120, y: cy }
-                  case 'bottom':
-                    return { x: cx, y: startShape.y + 80 }
-                  default:
-                    return { x: cx, y: cy }
-                }
-              }
-
-              const startCoord = getConnectionPointCoords()
+              const startCoord = getConnectionPointCoords(startShape, connectionPointId)
               return (
                 <line
                   x1={startCoord.x}
                   y1={startCoord.y}
                   x2={dragEndpoint.x}
                   y2={dragEndpoint.y}
-                  stroke="#9ca3af"
+                  stroke={hoveredConnectionPoint ? '#10b981' : '#9ca3af'}
                   strokeWidth="2"
                   strokeDasharray="5,5"
                   pointerEvents="none"

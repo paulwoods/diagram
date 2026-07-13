@@ -37,7 +37,7 @@ export default function App() {
     setSelectedShapeType(null)
   }
 
-  const handleAddConnector = (sourceId, targetId) => {
+  const handleAddConnector = (sourceId, targetId, sourcePointId, targetPointId) => {
     const source = shapes.find((s) => s.id === sourceId)
     const target = shapes.find((s) => s.id === targetId)
 
@@ -47,6 +47,8 @@ export default function App() {
       id: `connector-${connectorIdRef.current++}`,
       source: sourceId,
       target: targetId,
+      sourcePoint: sourcePointId || 'right',
+      targetPoint: targetPointId || 'left',
       label: '',
     }
 
@@ -95,10 +97,16 @@ export default function App() {
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result)
-        setShapes(data.shapes || [])
-        setConnectors(data.connectors || [])
-        shapeIdRef.current = Math.max(...(data.shapes?.map(s => parseInt(s.id.split('-')[1])) || [0])) + 1
-        connectorIdRef.current = Math.max(...(data.connectors?.map(c => parseInt(c.id.split('-')[1])) || [0])) + 1
+        const importedShapes = data.shapes || []
+        const importedConnectors = (data.connectors || []).map((c) => ({
+          ...c,
+          sourcePoint: c.sourcePoint || 'right',
+          targetPoint: c.targetPoint || 'left',
+        }))
+        setShapes(importedShapes)
+        setConnectors(importedConnectors)
+        shapeIdRef.current = Math.max(...(importedShapes?.map(s => parseInt(s.id.split('-')[1])) || [0])) + 1
+        connectorIdRef.current = Math.max(...(importedConnectors?.map(c => parseInt(c.id.split('-')[1])) || [0])) + 1
       } catch (error) {
         alert('Failed to import diagram: ' + error.message)
       }
