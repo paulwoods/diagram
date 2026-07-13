@@ -24,6 +24,8 @@ export default function Canvas({
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState('')
   const [editingType, setEditingType] = useState(null)
+  const [isPanning, setIsPanning] = useState(false)
+  const [panStart, setPanStart] = useState(null)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -40,8 +42,92 @@ export default function Canvas({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedId, shapes, connectors, onDeleteShape, onDeleteConnector])
 
+  const isPointOverShapeOrConnector = (point) => {
+    // Check if point is over any shape
+    const isOverShape = shapes.some((shape) => isPointInShape(point, shape))
+    if (isOverShape) return true
+
+    // For now, consider all canvas as safe (connectors are harder to hit-test)
+    return false
+  }
+
+  const handleCanvasMouseDown = (e) => {
+    // Left mouse button pan (only when not over a shape)
+    if (e.button === 0 && !selectedShapeType && !connectionStart) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const point = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+
+      if (!isPointOverShapeOrConnector(point)) {
+        setIsPanning(true)
+        setPanStart({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    // Also handle canvas click for adding shapes
+    if (selectedShapeType && e.button === 0) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      onAddShape({ x, y })
+    }
+  }
+
+  const handleCanvasMouseMove = (e) => {
+    if (isPanning && panStart) {
+      const dx = e.clientX - panStart.x
+      const dy = e.clientY - panStart.y
+
+      // Pan by translating the SVG
+      if (svgRef.current) {
+        const transform = svgRef.current.style.transform || ''
+        const currentTranslate = transform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\)/)
+        const currentX = currentTranslate ? parseFloat(currentTranslate[1]) : 0
+        const currentY = currentTranslate ? parseFloat(currentTranslate[2]) : 0
+
+        const newX = currentX + dx
+        const newY = currentY + dy
+
+        svgRef.current.style.transform = `translate(${newX}px, ${newY}px)`
+        setPanStart({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    // Handle drag-to-connect
+    if (connectionStart) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const endpoint = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+      setDragEndpoint(endpoint)
+
+      // Find which shape (if any) the cursor is over
+      const hoveredShape = shapes.find(
+        (shape) => shape.id !== connectionStart && isPointInShape(endpoint, shape)
+      )
+      setHoveredShapeId(hoveredShape?.id || null)
+    }
+  }
+
+  const handleCanvasMouseUp = (e) => {
+    if (isPanning) {
+      setIsPanning(false)
+      setPanStart(null)
+    }
+
+    if (connectionStart && hoveredShapeId && hoveredShapeId !== connectionStart) {
+      onAddConnector(connectionStart, hoveredShapeId)
+    }
+    setConnectionStart(null)
+    setDragEndpoint(null)
+    setHoveredShapeId(null)
+  }
+
   const handleCanvasClick = (e) => {
-    if (selectedShapeType) {
+    if (selectedShapeType && e.button === 0) {
       const rect = svgRef.current.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
@@ -73,32 +159,6 @@ export default function Canvas({
     )
   }
 
-  const handleSvgMouseMove = (e) => {
-    if (connectionStart) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const endpoint = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      }
-      setDragEndpoint(endpoint)
-
-      // Find which shape (if any) the cursor is over
-      const hoveredShape = shapes.find(
-        (shape) => shape.id !== connectionStart && isPointInShape(endpoint, shape)
-      )
-      setHoveredShapeId(hoveredShape?.id || null)
-    }
-  }
-
-  const handleSvgMouseUp = (e) => {
-    if (connectionStart && hoveredShapeId && hoveredShapeId !== connectionStart) {
-      onAddConnector(connectionStart, hoveredShapeId)
-    }
-    setConnectionStart(null)
-    setDragEndpoint(null)
-    setHoveredShapeId(null)
-    e.stopPropagation()
-  }
 
 
   const handleShapeDoubleClick = (shapeId, e, currentLabel) => {
@@ -133,17 +193,21 @@ export default function Canvas({
 
   return (
     <div className="canvas-container">
-      <TransformWrapper>
+      <TransformWrapper
+        disablePanning
+        wheel={{ step: 10 }}
+      >
         <TransformComponent>
           <svg
             ref={svgRef}
             className="canvas"
             width="4000"
             height="3000"
-            onClick={handleCanvasClick}
-            onMouseMove={handleSvgMouseMove}
-            onMouseUp={handleSvgMouseUp}
-            onMouseLeave={handleSvgMouseUp}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+            style={{ cursor: isPanning ? 'grabbing' : 'default' }}
           >
             <defs>
               <marker
