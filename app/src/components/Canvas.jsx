@@ -54,14 +54,20 @@ export default function Canvas({
     return false
   }
 
+  const getSVGCoordinates = (e) => {
+    const svg = svgRef.current
+    const pt = svg.createSVGPoint()
+    pt.x = e.clientX
+    pt.y = e.clientY
+    const screenCTM = svg.getScreenCTM()
+    const coords = pt.matrixTransform(screenCTM.inverse())
+    return { x: coords.x, y: coords.y }
+  }
+
   const handleCanvasMouseDown = (e) => {
     // Left mouse button pan (only when not over a shape)
     if (e.button === 0 && !selectedShapeType && !connectionStart) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const point = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      }
+      const point = getSVGCoordinates(e)
 
       if (!isPointOverShapeOrConnector(point)) {
         setIsPanning(true)
@@ -71,9 +77,7 @@ export default function Canvas({
 
     // Also handle canvas click for adding shapes
     if (selectedShapeType && e.button === 0) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const clickY = e.clientY - rect.top
+      const { x: clickX, y: clickY } = getSVGCoordinates(e)
 
       // Center shape on cursor (offset by half shape dimensions)
       const SHAPE_WIDTH = 120
@@ -88,9 +92,7 @@ export default function Canvas({
   const handleCanvasMouseMove = (e) => {
     // Handle shape dragging
     if (isDraggingShape && draggedShapeId && dragShapeStart) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const currentX = e.clientX - rect.left
-      const currentY = e.clientY - rect.top
+      const { x: currentX, y: currentY } = getSVGCoordinates(e)
 
       const dx = currentX - dragShapeStart.x
       const dy = currentY - dragShapeStart.y
@@ -122,11 +124,7 @@ export default function Canvas({
 
     // Handle drag-to-connect
     if (connectionStart) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const endpoint = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      }
+      const endpoint = getSVGCoordinates(e)
       setDragEndpoint(endpoint)
 
       // Find which shape (if any) the cursor is over
@@ -163,12 +161,12 @@ export default function Canvas({
 
     // Left button = start shape drag
     if (e.button === 0) {
-      const rect = svgRef.current.getBoundingClientRect()
+      const { x, y } = getSVGCoordinates(e)
       setIsDraggingShape(true)
       setDraggedShapeId(shapeId)
       setDragShapeStart({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x,
+        y,
         shapeX: shapes.find((s) => s.id === shapeId)?.x || 0,
         shapeY: shapes.find((s) => s.id === shapeId)?.y || 0,
       })
