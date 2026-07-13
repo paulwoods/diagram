@@ -72,8 +72,15 @@ export default function Canvas({
     // Also handle canvas click for adding shapes
     if (selectedShapeType && e.button === 0) {
       const rect = svgRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
+      const clickX = e.clientX - rect.left
+      const clickY = e.clientY - rect.top
+
+      // Center shape on cursor (offset by half shape dimensions)
+      const SHAPE_WIDTH = 120
+      const SHAPE_HEIGHT = 80
+      const x = clickX - SHAPE_WIDTH / 2
+      const y = clickY - SHAPE_HEIGHT / 2
+
       onAddShape({ x, y })
     }
   }
@@ -148,22 +155,6 @@ export default function Canvas({
     setConnectionStart(null)
     setDragEndpoint(null)
     setHoveredShapeId(null)
-  }
-
-  const handleCanvasClick = (e) => {
-    if (selectedShapeType && e.button === 0) {
-      const rect = svgRef.current.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const clickY = e.clientY - rect.top
-
-      // Center shape on cursor (offset by half shape dimensions)
-      const SHAPE_WIDTH = 120
-      const SHAPE_HEIGHT = 80
-      const x = clickX - SHAPE_WIDTH / 2
-      const y = clickY - SHAPE_HEIGHT / 2
-
-      onAddShape({ x, y })
-    }
   }
 
   const handleShapeMouseDown = (shapeId, e) => {
