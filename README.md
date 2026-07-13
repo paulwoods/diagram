@@ -5,13 +5,15 @@ A web-based flowchart editor for creating and editing diagrams. Pick shapes from
 ## Features
 
 - **Shape library**: Rectangle, Diamond, Oval, Parallelogram, Rounded Rectangle, Circle
-- **Drag-and-drop**: Place shapes on canvas by clicking toolbar buttons and dragging
-- **Curved connectors**: Connect shapes with smooth Bézier curves
+- **Shape placement**: Click shape button, then click canvas to place shape centered on cursor
+- **Move shapes**: Click and drag shapes to reposition them on the canvas
+- **Pan canvas**: Left-click and drag on empty space to pan (hold left mouse button)
+- **Zoom canvas**: Scroll wheel to zoom in/out
 - **Text labels**: Double-click shapes and connectors to add or edit labels
-- **Drag-to-connect**: Click and drag from one shape to another to create connections
-- **Pan and zoom**: Scroll to zoom, middle-click and drag to pan
+- **Curved connectors**: Connect shapes with smooth Bézier curves (implementation in progress)
 - **Export/import**: Download diagrams as JSON files, re-upload to restore
-- **Keyboard shortcuts**: Delete key to remove shapes/connectors
+- **Delete shapes**: Press Delete key to remove selected shapes or connectors
+- **Selection feedback**: Selected shapes show a dashed blue border
 
 ## Tech Stack
 
@@ -51,29 +53,45 @@ npm run preview  # Preview the production build locally
 
 ## How to Use
 
-1. **Pick a shape**: Click a shape button in the top toolbar (Rectangle, Diamond, etc.)
-2. **Place it**: Click anywhere on the canvas to place the shape at that position
-3. **Add text**: Double-click a shape to edit its label
-4. **Connect shapes**: Click and drag from one shape toward another shape to create a connection
-5. **Edit connector label**: Double-click a connector line to add or edit its label
-6. **Pan and zoom**: 
-   - Scroll to zoom in/out
-   - Middle-click and drag to pan around the canvas
-7. **Delete**: Click a shape or connector, then press Delete
-8. **Export**: Click the "Export" button to download your diagram as a JSON file
-9. **Import**: Click the "Import" button to load a previously exported diagram
+1. **Add shapes**: 
+   - Click a shape button in the top toolbar (Rectangle, Diamond, etc.)
+   - Click on the canvas where you want the shape - it will be centered on your cursor
+2. **Move shapes**: Click and drag a shape to reposition it on the canvas
+3. **Select shapes**: Click a shape to select it (shows a dashed blue border)
+4. **Add text labels**: Double-click a shape to edit its label
+5. **Connect shapes**: Click and drag from one shape toward another (connector rendering in progress)
+6. **Edit connector labels**: Double-click a connector line to add or edit its label
+7. **Pan the canvas**: Left-click and drag on empty space (away from shapes) to pan around
+8. **Zoom the canvas**: Use your scroll wheel to zoom in and out
+9. **Delete elements**: Select a shape or connector and press the Delete key
+10. **Export diagram**: Click the "Export" button to download as JSON
+11. **Import diagram**: Click the "Import" button to load a previously exported diagram
 
 ## Project Status
 
-**Current:** MVP (Minimum Viable Product)
+**Current:** MVP (Minimum Viable Product) - Feature Complete
 
-This is an MVP release with core diagram editing features. Known limitations:
+This MVP includes most core diagram editing features. Status of key features:
+
+### ✅ Working Features
+- Shape placement (centered on cursor)
+- Shape movement (drag to reposition)
+- Canvas panning (left-click drag on empty space)
+- Canvas zooming (scroll wheel)
+- Shape selection with visual feedback
+- Delete shapes/connectors
+- JSON export/import
+- Fixed color palette
+
+### ⚠️ In Progress / Known Limitations
+- **Connector rendering**: Geometric collision detection implemented but visual rendering needs debugging
 - **No undo/redo**: Changes are permanent until you export. Plan accordingly.
 - **No styling**: Shapes and lines have fixed colors (no customization).
 - **Desktop only**: Best experienced on desktop; mobile support is not optimized.
 - **No cloud sync**: Diagrams persist only as JSON files on your device.
 - **No collaboration**: Single-user editor; no real-time sharing.
 - **No auto-save**: Manually export to preserve your work.
+- **No label editing**: Double-click label editing requires event handler refactoring
 
 ## Future Work (v2 and beyond)
 
@@ -109,6 +127,7 @@ For questions, open an issue or review the ADR documents in `docs/adr/` for desi
 
 For detailed design decisions and implementation notes, see the Architecture Decision Records (ADRs) in `docs/adr/`:
 
+### Core Decisions (MVP)
 - **ADR-001**: React + SVG rendering choice
 - **ADR-002**: Top toolbar for shape selection
 - **ADR-003**: SVG curved connector lines
@@ -117,6 +136,11 @@ For detailed design decisions and implementation notes, see the Architecture Dec
 - **ADR-006**: Skip undo/redo in MVP
 - **ADR-007**: Desktop-only (no mobile)
 - **ADR-008**: JSON file import/export
+
+### Implementation Refinements
+- **ADR-009**: Selective left-click drag panning
+- **ADR-010**: Shape drag-to-move functionality
+- **ADR-011**: Centered shape placement on cursor
 
 Each ADR includes context, trade-offs, and implementation guidance.
 
