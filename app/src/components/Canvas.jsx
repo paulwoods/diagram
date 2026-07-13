@@ -68,19 +68,22 @@ export default function Canvas({
   }
 
   const handleCanvasMouseDown = (e) => {
+    const point = getSVGCoordinates(e)
+    const isOverShapeOrConnector = isPointOverShapeOrConnector(point)
+
     // Left mouse button pan (only when not over a shape)
     if (e.button === 0 && !selectedShapeType && !connectionStart) {
-      const point = getSVGCoordinates(e)
-
-      if (!isPointOverShapeOrConnector(point)) {
+      if (!isOverShapeOrConnector) {
         setIsPanning(true)
         setPanStart({ x: e.clientX, y: e.clientY })
+        // Deselect any selected elements when clicking on empty canvas
+        onSelectShape(null)
       }
     }
 
     // Also handle canvas click for adding shapes
     if (selectedShapeType && e.button === 0) {
-      const { x: clickX, y: clickY } = getSVGCoordinates(e)
+      const { x: clickX, y: clickY } = point
 
       // Center shape on cursor (offset by half shape dimensions)
       const SHAPE_WIDTH = 120
