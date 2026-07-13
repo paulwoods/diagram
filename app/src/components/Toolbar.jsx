@@ -9,7 +9,7 @@ const SHAPES = [
   { id: 'circle', label: 'Circle', icon: '●' },
 ]
 
-export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, onImport }) {
+export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, onImport, zoomLevel = 100 }) {
   return (
     <div className="toolbar">
       <div className="shape-buttons">
@@ -26,6 +26,7 @@ export default function Toolbar({ selectedShapeType, onShapeSelect, onExport, on
       </div>
 
       <div className="file-buttons">
+        <div className="zoom-indicator">Zoom: {zoomLevel}%</div>
         <button className="file-btn" onClick={onExport} title="Export diagram as JSON">
           Export
         </button>

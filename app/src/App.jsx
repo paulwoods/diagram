@@ -17,6 +17,7 @@ export default function App() {
   const [connectors, setConnectors] = useState([])
   const [selectedShapeType, setSelectedShapeType] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
+  const [zoomLevel, setZoomLevel] = useState(100)
   const shapeIdRef = useRef(1)
   const connectorIdRef = useRef(1)
 
@@ -112,6 +113,7 @@ export default function App() {
         onShapeSelect={setSelectedShapeType}
         onExport={handleExport}
         onImport={handleImport}
+        zoomLevel={zoomLevel}
       />
       <Canvas
         shapes={shapes}
@@ -125,6 +127,7 @@ export default function App() {
         onDeleteShape={handleDeleteShape}
         onDeleteConnector={handleDeleteConnector}
         onUpdateConnector={handleUpdateConnector}
+        onZoomChange={setZoomLevel}
       />
     </div>
   )

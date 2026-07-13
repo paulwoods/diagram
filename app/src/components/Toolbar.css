@@ -42,7 +42,15 @@
 
 .file-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
+}
+
+.zoom-indicator {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 80px;
 }
 
 .file-btn {

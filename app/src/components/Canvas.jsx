@@ -16,6 +16,7 @@ export default function Canvas({
   onDeleteShape,
   onDeleteConnector,
   onUpdateConnector,
+  onZoomChange,
 }) {
   const svgRef = useRef(null)
   const [connectionStart, setConnectionStart] = useState(null)
@@ -228,6 +229,11 @@ export default function Canvas({
       <TransformWrapper
         disablePanning
         wheel={{ step: 10 }}
+        onTransformed={(instance) => {
+          if (onZoomChange) {
+            onZoomChange(Math.round(instance.state.scale * 100))
+          }
+        }}
       >
         <TransformComponent>
           <svg
