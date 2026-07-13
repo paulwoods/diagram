@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Editor - Architecture Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        .card-container {
+            scroll-behavior: smooth;
+        }
+        .candidate-card {
+            scroll-margin-top: 80px;
+        }
+        .diagram-container {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .badge-strong {
+            @apply bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold;
+        }
+        .badge-exploring {
+            @apply bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold;
+        }
+        .badge-speculative {
+            @apply bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+        }
+        .diagram-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+        }
+        .file-list {
+            @apply bg-slate-50 border border-slate-200 rounded p-3 text-sm font-mono;
+        }
+        svg.architecture {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-slate-800">Flowchart Editor Architecture Review</h1>
+            <div class="text-sm text-slate-600">9 Friction Points Identified</div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Executive Summary -->
+        <section class="mb-12">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8">
+                <h2 class="text-2xl font-bold text-blue-900 mb-4">Executive Summary</h2>
+                <p class="text-blue-800 mb-4">The flowchart editor codebase is feature-complete but shows clear signs of shallow modules and mixed concerns that will create friction as the project scales.</p>
+                <div class="grid grid-cols-3 gap-4 mt-6">
+                    <div class="bg-white rounded p-4 border border-blue-100">
+                        <div class="text-2xl font-bold text-red-600">3</div>
+                        <div class="text-sm text-slate-600">High Priority</div>
+                    </div>
+                    <div class="bg-white rounded p-4 border border-blue-100">
+                        <div class="text-2xl font-bold text-yellow-600">4</div>
+                        <div class="text-sm text-slate-600">Medium Priority</div>
+                    </div>
+                    <div class="bg-white rounded p-4 border border-blue-100">
+                        <div class="text-2xl font-bold text-blue-600">2</div>
+                        <div class="text-sm text-slate-600">Nice to Have</div>
+                    </div>
+                </div>
+                <p class="text-blue-800 text-sm mt-6 font-mono">Root cause: Canvas.jsx is a 404-line god module mixing shape dragging, panning, connection creation, and editing. Geometry logic is duplicated across 3 files with no shared constants.</p>
+            </div>
+        </section>
+
+        <!-- Quick Navigation -->
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Candidates for Deepening</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <a href="#candidate-1" class="p-3 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition">
+                        <span class="badge-strong">HIGH</span>
+                        <div class="text-sm font-semibold text-red-900 mt-2">Duplicate Geometry Logic</div>
+                    </a>
+                    <a href="#candidate-2" class="p-3 bg-yellow-50 border border-yellow-200 rounded hover:bg-yellow-100 transition">
+                        <span class="badge-exploring">MEDIUM</span>
+                        <div class="text-sm font-semibold text-yellow-900 mt-2">Magic Numbers</div>
+                    </a>
+                    <a href="#candidate-3" class="p-3 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition">
+                        <span class="badge-strong">HIGH</span>
+                        <div class="text-sm font-semibold text-red-900 mt-2">Mixed Canvas Concerns</div>
+                    </a>
+                    <a href="#candidate-4" class="p-3 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition">
+                        <span class="badge-strong">HIGH</span>
+                        <div class="text-sm font-semibold text-red-900 mt-2">Shallow Modules</div>
+                    </a>
+                    <a href="#candidate-5" class="p-3 bg-yellow-50 border border-yellow-200 rounded hover:bg-yellow-100 transition">
+                        <span class="badge-exploring">MEDIUM</span>
+                        <div class="text-sm font-semibold text-yellow-900 mt-2">Editing Seam</div>
+                    </a>
+                    <a href="#candidate-6" class="p-3 bg-yellow-50 border border-yellow-200 rounded hover:bg-yellow-100 transition">
+                        <span class="badge-exploring">MEDIUM</span>
+                        <div class="text-sm font-semibold text-yellow-900 mt-2">Fragile Logic</div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Candidates -->
+        <div class="space-y-8 card-container">
+            <!-- Candidate 1: Duplicate Geometry -->
+            <section id="candidate-1" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Extract Duplicate Geometry Logic</h3>
+                            <p class="text-slate-600 text-sm mt-1">Consolidate connection point calculations into a shared module</p>
+                        </div>
+                        <span class="badge-strong">STRONG</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Files -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Files Involved</h4>
+                            <div class="file-list space-y-1">
+                                <div>Canvas.jsx:201-216 – getConnectionPointCoords()</div>
+                                <div>Connector.jsx:1-16 – duplicate getConnectionPointCoords()</div>
+                                <div>ShapeElement.jsx:100-105 – hardcoded connectionPoints array</div>
+                            </div>
+                        </div>
+
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <p class="text-slate-700">The same connection point geometry (left, top, right, bottom positions at shape edges) is calculated three separate ways across three files. When connection point behavior changes—moving them to different positions, changing their number, or adjusting hit detection—you must update all three locations simultaneously or risk silent bugs where shapes connect to stale positions.</p>
+                            <p class="text-slate-700 mt-3 font-mono text-sm bg-red-50 p-3 rounded border border-red-200">
+                                ❌ Deletion test: If you deleted this duplicate, complexity would <strong>concentrate</strong> in one place. This is a good signal it should be extracted.
+                            </p>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700">Create a <code class="bg-slate-100 px-2 py-1 rounded text-sm font-mono">ShapeGeometry</code> module that owns all shape-related geometry:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// ShapeGeometry.js
+export const SHAPE_DIMENSIONS = {
+  width: 120,
+  height: 80,
+};
+
+export function getConnectionPointCoords(shape, pointId) {
+  const cx = shape.x + SHAPE_DIMENSIONS.width / 2;
+  const cy = shape.y + SHAPE_DIMENSIONS.height / 2;
+  
+  switch(pointId) {
+    case 'left':
+      return { x: shape.x, y: cy };
+    case 'top':
+      return { x: cx, y: shape.y };
+    // ... etc
+  }
+}
+
+export function getConnectionPoints(shape) {
+  return [
+    { id: 'left', ...getConnectionPointCoords(shape, 'left') },
+    { id: 'top', ...getConnectionPointCoords(shape, 'top') },
+    // ...
+  ];
+}</pre>
+                            </div>
+                            <p class="text-slate-700 mt-3">Now Canvas, Connector, and ShapeElement all import from this single module. Geometry changes propagate everywhere automatically.</p>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Locality:</strong> All connection point geometry lives in one place. When connection points break, look in ShapeGeometry, not 3 files.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Testability:</strong> Connection point calculations can be unit-tested independently, then trusted in Canvas/Connector/ShapeElement.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Leverage:</strong> When adding new shape types or connection point variants, edit one file instead of three.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Before/After Diagram -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Architecture Change</h4>
+                            <div class="before-after">
+                                <div>
+                                    <div class="text-sm font-semibold text-red-700 mb-2">❌ BEFORE (Shallow)</div>
+                                    <div class="diagram-box">
+                                        <svg class="architecture" viewBox="0 0 250 200">
+                                            <text x="125" y="20" text-anchor="middle" font-weight="bold" font-size="14">Canvas.jsx</text>
+                                            <circle cx="125" cy="50" r="30" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+                                            <text x="125" y="55" text-anchor="middle" font-size="12" font-weight="bold">getConnection</text>
+                                            <text x="125" y="68" text-anchor="middle" font-size="12" font-weight="bold">PointCoords()</text>
+
+                                            <text x="125" y="120" text-anchor="middle" font-weight="bold" font-size="14">ShapeElement.jsx</text>
+                                            <circle cx="125" cy="150" r="30" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+                                            <text x="125" y="150" text-anchor="middle" font-size="12" font-weight="bold">hardcoded</text>
+                                            <text x="125" y="163" text-anchor="middle" font-size="12" font-weight="bold">array</text>
+
+                                            <line x1="125" y1="80" x2="125" y2="120" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-2">3 copies of same logic = hard to maintain</p>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-green-700 mb-2">✅ AFTER (Deep)</div>
+                                    <div class="diagram-box">
+                                        <svg class="architecture" viewBox="0 0 250 200">
+                                            <text x="125" y="20" text-anchor="middle" font-weight="bold" font-size="14">ShapeGeometry.js</text>
+                                            <circle cx="125" cy="50" r="35" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                                            <text x="125" y="48" text-anchor="middle" font-size="12" font-weight="bold">getConnection</text>
+                                            <text x="125" y="61" text-anchor="middle" font-size="12" font-weight="bold">PointCoords()</text>
+
+                                            <text x="40" y="130" font-weight="bold" font-size="12">Canvas</text>
+                                            <rect x="15" y="140" width="50" height="40" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+
+                                            <text x="125" y="130" font-weight="bold" font-size="12">ShapeElement</text>
+                                            <rect x="100" y="140" width="50" height="40" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+
+                                            <text x="210" y="130" font-weight="bold" font-size="12">Connector</text>
+                                            <rect x="185" y="140" width="50" height="40" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+
+                                            <line x1="40" y1="140" x2="125" y2="85" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrowhead)"/>
+                                            <line x1="125" y1="140" x2="125" y2="85" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrowhead)"/>
+                                            <line x1="210" y1="140" x2="125" y2="85" stroke="#4f46e5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                                            <defs>
+                                                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                                    <polygon points="0 0, 10 5, 0 10" fill="#4f46e5"/>
+                                                </marker>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-2">Single source of truth, all depend on it</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidate 2: Mixed Canvas Concerns -->
+            <section id="candidate-3" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Extract Interaction Concerns from Canvas</h3>
+                            <p class="text-slate-600 text-sm mt-1">Break god module into focused custom hooks for shape dragging, panning, and connections</p>
+                        </div>
+                        <span class="badge-strong">STRONG</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Files -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Files Involved</h4>
+                            <div class="file-list space-y-1">
+                                <div>Canvas.jsx:16-34 (state variables)</div>
+                                <div>Canvas.jsx:70-172 (event handlers mixing 3 concerns)</div>
+                            </div>
+                        </div>
+
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <p class="text-slate-700">Canvas.jsx mixes 10+ state variables and 3 massive mouse event handlers that interleave shape dragging, panning, and connection creation:</p>
+                            <div class="bg-red-50 border border-red-200 rounded p-4 mt-3 text-sm">
+                                <p class="font-mono text-red-900 mb-2"><strong>State:</strong> isDraggingShape, draggedShapeId, dragShapeStart, isPanning, panStart, connectionStart, connectionPointId, dragEndpoint, hoveredShapeId, hoveredConnectionPoint, editingId, editingText, editingType</p>
+                                <p class="text-red-900">When you read <code class="bg-red-100 px-1">handleCanvasMouseMove</code>, you must understand all 3 interaction models at once. A single mouse event cascades through unrelated state updates.</p>
+                            </div>
+                            <p class="text-slate-700 mt-3 font-mono text-sm bg-red-50 p-3 rounded border border-red-200">
+                                ✓ Deletion test: Extracting these state groups would <strong>concentrate</strong> related logic. This is a textbook deepening opportunity.
+                            </p>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700">Create three custom hooks, each owning one interaction concern:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// useShapeDragging.js
+export function useShapeDragging(shapes, onUpdateShape) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedShapeId, setDraggedShapeId] = useState(null);
+  const [dragStart, setDragStart] = useState(null);
+  
+  const handleMouseDown = (shapeId, point) => { /* ... */ };
+  const handleMouseMove = (point) => { /* ... */ };
+  const handleMouseUp = () => { /* ... */ };
+  
+  return { isDragging, draggedShapeId, handleMouseDown, handleMouseMove, handleMouseUp };
+}
+
+// useCanvasPanning.js
+export function useCanvasPanning(svgRef) {
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState(null);
+  
+  const handleMouseDown = (clientPoint) => { /* ... */ };
+  const handleMouseMove = (clientPoint) => { /* ... */ };
+  const handleMouseUp = () => { /* ... */ };
+  
+  return { isPanning, handleMouseDown, handleMouseMove, handleMouseUp };
+}
+
+// useConnectionCreation.js
+export function useConnectionCreation(shapes, onAddConnector) {
+  const [connectionStart, setConnectionStart] = useState(null);
+  // ... other states
+  
+  const handlePointMouseDown = (shapeId, pointId) => { /* ... */ };
+  const handleMouseMove = (point) => { /* ... */ };
+  const handleMouseUp = () => { /* ... */ };
+  
+  return { connectionStart, handlePointMouseDown, handleMouseMove, handleMouseUp };
+}</pre>
+                            </div>
+                            <p class="text-slate-700 mt-3">Canvas now composes these hooks cleanly, delegating concerns:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-2 font-mono text-sm overflow-x-auto">
+<pre>function Canvas({ shapes, connectors, onAddConnector, ... }) {
+  const dragging = useShapeDragging(shapes, onUpdateShape);
+  const panning = useCanvasPanning(svgRef);
+  const connection = useConnectionCreation(shapes, onAddConnector);
+  
+  const handleCanvasMouseDown = (e) => {
+    if (e.button === 0 && !connectionStart) {
+      panning.handleMouseDown(e.clientX, e.clientY);
+    }
+    if (selectedShapeType) {
+      // add shape logic here
+    }
+  };
+  // Much simpler!
+}</pre>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Locality:</strong> To understand shape dragging, read useShapeDragging. All related state & logic is in one file.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Testability:</strong> Each hook can be tested in isolation with mock shapes/callbacks, without rendering Canvas.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Leverage:</strong> Reuse useShapeDragging in other diagram tools. Reuse useCanvasPanning in a general canvas component.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Maintainability:</strong> Canvas shrinks from 404 lines to ~100 lines of composition logic.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Architecture Diagram -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Architecture Change</h4>
+                            <div class="before-after">
+                                <div>
+                                    <div class="text-sm font-semibold text-red-700 mb-2">❌ BEFORE (God Module)</div>
+                                    <div class="diagram-box">
+                                        <svg class="architecture" viewBox="0 0 250 250">
+                                            <text x="125" y="20" text-anchor="middle" font-weight="bold" font-size="14">Canvas.jsx</text>
+                                            <text x="125" y="40" text-anchor="middle" font-size="11">404 lines</text>
+
+                                            <rect x="20" y="60" width="210" height="170" fill="#fee2e2" stroke="#dc2626" stroke-width="2" rx="4"/>
+
+                                            <rect x="30" y="70" width="190" height="40" fill="#fca5a5" stroke="#b91c1c" stroke-width="1"/>
+                                            <text x="125" y="100" text-anchor="middle" font-size="11" font-weight="bold">Shape Dragging State</text>
+
+                                            <rect x="30" y="120" width="190" height="40" fill="#fca5a5" stroke="#b91c1c" stroke-width="1"/>
+                                            <text x="125" y="150" text-anchor="middle" font-size="11" font-weight="bold">Panning State</text>
+
+                                            <rect x="30" y="170" width="190" height="40" fill="#fca5a5" stroke="#b91c1c" stroke-width="1"/>
+                                            <text x="125" y="200" text-anchor="middle" font-size="11" font-weight="bold">Connection Creation State</text>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-2">All concerns jumbled together</p>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-green-700 mb-2">✅ AFTER (Modular Hooks)</div>
+                                    <div class="diagram-box">
+                                        <svg class="architecture" viewBox="0 0 250 250">
+                                            <text x="125" y="20" text-anchor="middle" font-weight="bold" font-size="14">Canvas.jsx</text>
+                                            <text x="125" y="40" text-anchor="middle" font-size="11">~100 lines composition</text>
+
+                                            <rect x="20" y="60" width="60" height="50" fill="#dcfce7" stroke="#16a34a" stroke-width="2" rx="4"/>
+                                            <text x="50" y="87" text-anchor="middle" font-size="10" font-weight="bold">useShape</text>
+                                            <text x="50" y="100" text-anchor="middle" font-size="10" font-weight="bold">Dragging</text>
+
+                                            <rect x="95" y="60" width="60" height="50" fill="#dcfce7" stroke="#16a34a" stroke-width="2" rx="4"/>
+                                            <text x="125" y="87" text-anchor="middle" font-size="10" font-weight="bold">useCanvas</text>
+                                            <text x="125" y="100" text-anchor="middle" font-size="10" font-weight="bold">Panning</text>
+
+                                            <rect x="170" y="60" width="60" height="50" fill="#dcfce7" stroke="#16a34a" stroke-width="2" rx="4"/>
+                                            <text x="200" y="87" text-anchor="middle" font-size="10" font-weight="bold">useConnection</text>
+                                            <text x="200" y="100" text-anchor="middle" font-size="10" font-weight="bold">Creation</text>
+
+                                            <line x1="50" y1="110" x2="125" y2="140" stroke="#16a34a" stroke-width="2"/>
+                                            <line x1="125" y1="110" x2="125" y2="140" stroke="#16a34a" stroke-width="2"/>
+                                            <line x1="200" y1="110" x2="125" y2="140" stroke="#16a34a" stroke-width="2"/>
+
+                                            <rect x="40" y="140" width="170" height="40" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5" rx="2"/>
+                                            <text x="125" y="165" text-anchor="middle" font-size="11" font-weight="bold">Canvas composes hooks</text>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-2">Each hook is focused and reusable</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidate 3: Magic Numbers / Constants -->
+            <section id="candidate-2" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-yellow-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Centralize Magic Numbers into Constants Module</h3>
+                            <p class="text-slate-600 text-sm mt-1">Create a single config file for all hardcoded values</p>
+                        </div>
+                        <span class="badge-exploring">WORTH EXPLORING</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <p class="text-slate-700">Magic numbers appear 30+ times across 4 files with no explanation:</p>
+                            <ul class="list-disc list-inside mt-3 space-y-1 text-slate-700 text-sm">
+                                <li><code class="bg-slate-100 px-1">120</code> (shape width) and <code class="bg-slate-100 px-1">80</code> (height) - Canvas, ShapeElement, Connector</li>
+                                <li><code class="bg-slate-100 px-1">8</code> (hit radius for connection points) - Canvas:223</li>
+                                <li><code class="bg-slate-100 px-1">5</code> (collision padding) - Canvas:244</li>
+                                <li><code class="bg-slate-100 px-1">50</code> (curve offset) - Connector:21 – why 50? Never documented.</li>
+                                <li><code class="bg-slate-100 px-1">4000x3000</code> (canvas size) - Canvas:298</li>
+                                <li><code class="bg-slate-100 px-1">70, 28</code> (connector label box) - Connector:96-99</li>
+                            </ul>
+                            <p class="text-slate-700 mt-4">When a bug report says "shapes are too hard to click," you don't know if it's the hit radius (8) or collision padding (5). These numbers should have names and comments explaining their origin.</p>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700">Create a constants module that centralizes all configuration:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// constants/CANVAS_CONFIG.js
+
+export const CANVAS = {
+  WIDTH: 4000,
+  HEIGHT: 3000,
+};
+
+export const SHAPE = {
+  WIDTH: 120,
+  HEIGHT: 80,
+  
+  // How far outside the shape bounds to detect clicks
+  COLLISION_PADDING: 5,
+};
+
+export const CONNECTION_POINT = {
+  // Radius for hit detection when hovering over a connection point
+  HIT_RADIUS: 8,
+  
+  // Offset for Bézier curve control points (higher = more curve)
+  // Determined empirically to give smooth-looking curves
+  CURVE_OFFSET: 50,
+};
+
+export const CONNECTOR_LABEL = {
+  BOX_WIDTH: 70,
+  BOX_HEIGHT: 28,
+  PADDING: 8,
+};
+
+export const COLORS = {
+  SHAPE_SELECTION: '#3b82f6',
+  CONNECTION_HOVER: '#10b981',
+  CONNECTOR_PATH: '#64748b',
+};
+</pre>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Maintainability:</strong> Change hit radius in one place; it updates everywhere.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Discoverability:</strong> A new contributor can read CANVAS_CONFIG.js to understand the whole shape system at a glance.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>A/B Testing:</strong> Easily try different hit radii or curve offsets by swapping constants.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidate 4: Shallow Modules -->
+            <section id="candidate-4" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Consolidate Shallow Rendering Logic</h3>
+                            <p class="text-slate-600 text-sm mt-1">Merge renderShapeGeometry and Toolbar into deeper, more purposeful modules</p>
+                        </div>
+                        <span class="badge-strong">STRONG</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <div class="grid grid-cols-2 gap-4 mt-3">
+                                <div class="bg-red-50 border border-red-200 rounded p-4">
+                                    <p class="font-semibold text-red-900 mb-2">renderShapeGeometry</p>
+                                    <p class="text-sm text-red-800">80 lines of pure switch statement. ShapeElement calls it. If deleted, complexity wouldn't concentrate—it would just move inline.</p>
+                                </div>
+                                <div class="bg-red-50 border border-red-200 rounded p-4">
+                                    <p class="font-semibold text-red-900 mb-2">Toolbar.jsx</p>
+                                    <p class="text-sm text-red-800">43 lines, 95% JSX. Defines SHAPES array, then renders buttons that pass shape type to parent. No encapsulation, no business logic.</p>
+                                </div>
+                            </div>
+                            <p class="text-slate-700 mt-4 font-mono text-sm bg-red-50 p-3 rounded border border-red-200">
+                                ✓ Deletion test: Deleting these would <strong>NOT</strong> concentrate complexity. They're just boilerplate split for appearance. This is a signal they should either be merged or eliminated.
+                            </p>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700"><strong>Option A:</strong> Inline renderShapeGeometry into ShapeElement (eliminates unnecessary indirection). Toolbar stays as-is since it's UI.</p>
+                            <p class="text-slate-700 mt-3"><strong>Option B (Recommended):</strong> Create a <code class="bg-slate-100 px-2 py-1 rounded text-sm font-mono">ShapeRenderer</code> component that owns all shape rendering concerns:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// ShapeRenderer.jsx
+// Owns: geometry, selection border, labels, connection points
+export function ShapeRenderer({ 
+  shape, 
+  isSelected, 
+  isDraggingConnector,
+  onMouseDown, 
+  onDoubleClick, 
+  onConnectionPointMouseDown 
+}) {
+  return (
+    &lt;g onMouseDown={(e) => onMouseDown(shape.id, e)}&gt;
+      {renderShapeGeometry(shape)}
+      {isSelected && renderSelectionBorder(shape)}
+      {(isSelected || isDraggingConnector) && renderConnectionPoints(shape, onConnectionPointMouseDown)}
+      {renderLabel(shape)}
+    &lt;/g&gt;
+  );
+}
+
+// OR: Keep renderShapeGeometry inline if only 80 lines
+export function ShapeRenderer({ shape, isSelected, isDraggingConnector, ... }) {
+  return (
+    &lt;g onMouseDown={...}&gt;
+      {shape.type === 'rectangle' && (
+        &lt;rect x={shape.x} y={shape.y} width={120} height={80} ... /&gt;
+      )}
+      {/* ... more shapes ... */}
+      {isSelected && renderSelectionBorder(shape)}
+      {(isSelected || isDraggingConnector) && renderConnectionPoints(shape)}
+    &lt;/g&gt;
+  );
+}
+</pre>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Locality:</strong> All shape rendering (geometry, selection, labels, points) lives in one module, not split across ShapeElement + renderShapeGeometry.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Testability:</strong> ShapeRenderer can be tested directly with various props, rather than testing through ShapeElement + separate function.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Clarity:</strong> "This component renders all visual aspects of a shape" is clearer than "ShapeElement wraps renderShapeGeometry."</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidate 5: Editing Seam -->
+            <section id="candidate-5" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-yellow-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Extract Editing Concerns into Own Module</h3>
+                            <p class="text-slate-600 text-sm mt-1">Separate label editing logic from canvas interaction</p>
+                        </div>
+                        <span class="badge-exploring">WORTH EXPLORING</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <p class="text-slate-700">Canvas owns all editing state and behavior:</p>
+                            <ul class="list-disc list-inside mt-3 space-y-1 text-slate-700 text-sm">
+                                <li>Editing state: editingId, editingText, editingType</li>
+                                <li>Handlers: handleShapeDoubleClick, handleConnectorDoubleClick, handleEditSubmit</li>
+                                <li>Modal UI: lines 380-401 (handled both shapes and connectors via conditional)</li>
+                            </ul>
+                            <p class="text-slate-700 mt-4">ShapeElement and Connector are just pass-through: they receive editing props, forward double-click to Canvas, wait for Canvas to send back the edited text. When editing breaks, bugs are hard to trace because responsibility is split across 3 files.</p>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700">Create a custom hook + context for editing:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// useEditingMode.js
+export function useEditingMode() {
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const [editingType, setEditingType] = useState(null);
+
+  const startEditing = (id, currentText, type) => {
+    setEditingId(id);
+    setEditingText(currentText);
+    setEditingType(type);
+  };
+
+  const submitEdit = (onSave) => {
+    if (editingId) onSave(editingId, editingText);
+    clear();
+  };
+
+  const clear = () => {
+    setEditingId(null);
+    setEditingText('');
+    setEditingType(null);
+  };
+
+  return { 
+    editingId, 
+    editingText, 
+    editingType,
+    setEditingText,
+    startEditing, 
+    submitEdit, 
+    clear,
+    isEditing: editingId !== null
+  };
+}
+
+// EditingModal.jsx - owns the modal UI
+export function EditingModal({ editing, onShapeSave, onConnectorSave }) {
+  if (!editing.isEditing) return null;
+
+  const handleSubmit = () => {
+    if (editing.editingType === 'shape') {
+      onShapeSave(editing.editingId, editing.editingText);
+    } else if (editing.editingType === 'connector') {
+      onConnectorSave(editing.editingId, editing.editingText);
+    }
+    editing.clear();
+  };
+
+  return (
+    &lt;div className="edit-modal-overlay" onClick={editing.clear}&gt;
+      &lt;div className="edit-modal"&gt;
+        &lt;h3&gt;Edit Label&lt;/h3&gt;
+        &lt;input
+          value={editing.editingText}
+          onChange={(e) => editing.setEditingText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSubmit();
+            if (e.key === 'Escape') editing.clear();
+          }}
+        /&gt;
+        &lt;button onClick={handleSubmit}&gt;Done&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Locality:</strong> All editing logic—state, modal UI, handlers—lives in useEditingMode + EditingModal, not scattered across Canvas, ShapeElement, Connector.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Testability:</strong> useEditingMode can be tested without rendering Canvas or ShapeElement.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Reusability:</strong> Other diagram tools can reuse useEditingMode + EditingModal.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Candidate 6: Fragile Logic -->
+            <section id="candidate-6" class="candidate-card bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-yellow-500">
+                <div class="p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Document and Test Fragile Geometry Functions</h3>
+                            <p class="text-slate-600 text-sm mt-1">Add comments and unit tests for magic numbers in path generation and hit detection</p>
+                        </div>
+                        <span class="badge-exploring">WORTH EXPLORING</span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Problem -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Problem</h4>
+                            <p class="text-slate-700">Three functions hide unexplained behavior:</p>
+                            <ul class="space-y-3 mt-3">
+                                <li>
+                                    <p class="font-semibold text-slate-700"><code class="bg-slate-100 px-1">isPointInShape()</code> – line 244</p>
+                                    <p class="text-slate-600 text-sm">Adds 5px padding on all sides for collision detection. Why 5? Never documented. Changes here affect shape selectability but no comment explains it.</p>
+                                </li>
+                                <li>
+                                    <p class="font-semibold text-slate-700"><code class="bg-slate-100 px-1">generateCurvedPath()</code> – line 21</p>
+                                    <p class="text-slate-600 text-sm">Offsets control points by 50px. Why 50? No explanation. Empirically determined? This affects curve smoothness but is invisible.</p>
+                                </li>
+                                <li>
+                                    <p class="font-semibold text-slate-700"><code class="bg-slate-100 px-1">getPathMidpoint()</code> – line 27</p>
+                                    <p class="text-slate-600 text-sm">Parses SVG path string by array index: <code class="bg-slate-100 px-1">parts[1], parts[5], parts[6]</code>. If <code class="bg-slate-100 px-1">generateCurvedPath()</code> changes format, this breaks silently.</p>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Solution -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">The Solution</h4>
+                            <p class="text-slate-700">Add inline documentation + unit tests:</p>
+                            <div class="bg-slate-100 p-4 rounded mt-3 font-mono text-sm overflow-x-auto">
+<pre>// Canvas.jsx
+const isPointInShape = (point, shape) => {
+  const SHAPE_WIDTH = 120;
+  const SHAPE_HEIGHT = 80;
+  // Hit detection padding: expand shape bounds by 5px to make small shapes 
+  // easier to click. This is tuned for 13" laptop screens at 100% zoom.
+  // If you change this, run the hit-detection test suite.
+  const COLLISION_PADDING = 5;
+
+  return (
+    point.x >= shape.x - COLLISION_PADDING &&
+    point.x <= shape.x + SHAPE_WIDTH + COLLISION_PADDING &&
+    point.y >= shape.y - COLLISION_PADDING &&
+    point.y <= shape.y + SHAPE_HEIGHT + COLLISION_PADDING
+  );
+};
+
+// Connector.jsx
+const generateCurvedPath = (startCoord, endCoord) => {
+  const offsetY = 50;
+  // Control point offset: 50px creates smooth Bézier curves for typical 
+  // diagram shapes. Higher values = more curve; lower = straighter.
+  // Tested against shapes 200-400px apart. Adjust if adding long/short connectors.
+  
+  const cp1x = startCoord.x + offsetY;
+  // ...
+};
+
+// Unit test for path parsing
+test('getPathMidpoint extracts correct coordinate from generated path', () => {
+  const path = 'M 0 0 C 50 0 150 0 200 100';
+  const midpoint = getPathMidpoint(path);
+  expect(midpoint).toEqual({ x: 100, y: 50 }); // halfway through quadratic
+});
+</pre>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3">Benefits</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Maintainability:</strong> Future you (or a teammate) knows why these numbers exist and can change them confidently.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Testability:</strong> Unit tests act as executable documentation. If someone breaks getPathMidpoint, the test fails immediately.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-600 mr-3 font-bold">✓</span>
+                                    <span class="text-slate-700"><strong>Discoverability:</strong> Comments link geometry constants to their origin (collision padding → hit detection behavior).</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Top Recommendation -->
+        <section class="mt-12 bg-gradient-to-r from-indigo-50 to-blue-50 border-l-4 border-indigo-500 rounded-lg p-8 shadow-md">
+            <h2 class="text-2xl font-bold text-indigo-900 mb-4">🎯 Top Recommendation: Start Here</h2>
+            <div class="space-y-4">
+                <div class="bg-white rounded p-4 border border-indigo-200">
+                    <h3 class="font-bold text-indigo-900 mb-2">1. Extract Duplicate Geometry Logic → ShapeGeometry Module</h3>
+                    <p class="text-slate-700 text-sm">
+                        <strong>Why first?</strong> This is a quick win with immediate payoff. Geometry is duplicated in exactly 3 places; consolidating them into one module takes ~30 minutes and eliminates a whole class of bugs (stale coordinates). It also unblocks the next refactoring.
+                    </p>
+                    <p class="text-slate-700 text-sm mt-2">
+                        <strong>Files to touch:</strong> Create ShapeGeometry.js, update Canvas.jsx, Connector.jsx, ShapeElement.jsx (4 files)
+                    </p>
+                    <p class="text-slate-700 text-sm mt-2">
+                        <strong>Expected outcome:</strong> No change in behavior, but geometry bugs become impossible (single source of truth).
+                    </p>
+                </div>
+
+                <div class="bg-white rounded p-4 border border-indigo-200">
+                    <h3 class="font-bold text-indigo-900 mb-2">2. Centralize Constants → CANVAS_CONFIG Module</h3>
+                    <p class="text-slate-700 text-sm">
+                        <strong>Why next?</strong> Once geometry is consolidated, magic numbers become obvious. Adding CANVAS_CONFIG takes another ~20 minutes and gives you a single place to tune hit radius, curve offset, canvas size, etc.
+                    </p>
+                    <p class="text-slate-700 text-sm mt-2">
+                        <strong>Quick win:</strong> A/B test hit radius by changing one constant, not hunting through 3 files.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded p-4 border border-indigo-200">
+                    <h3 class="font-bold text-indigo-900 mb-2">3. Extract Canvas Interaction Hooks → useShapeDragging, etc.</h3>
+                    <p class="text-slate-700 text-sm">
+                        <strong>Why third?</strong> With geometry and constants extracted, Canvas becomes clearer. Pulling out interaction concerns into custom hooks shrinks Canvas from 404 → 100 lines and makes interaction testable. This is a larger refactor (~1-2 hours) but has the biggest payoff.
+                    </p>
+                    <p class="text-slate-700 text-sm mt-2">
+                        <strong>Payoff:</strong> Canvas is now readable. Adding new interactions (snap-to-grid, multi-select) becomes straightforward.
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-indigo-800 mt-6 font-semibold">
+                Total time to do all 3: ~2-3 hours. Result: Clean architecture that scales.
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 py-8 border-t border-slate-200">
+            <p class="text-slate-600 text-sm text-center">
+                Architecture Review for Flowchart Editor | Generated by architecture-review skill
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

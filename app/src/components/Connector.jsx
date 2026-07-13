@@ -1,24 +1,10 @@
-function getConnectionPointCoords(shape, pointId) {
-  const cx = shape.x + 60
-  const cy = shape.y + 40
-  switch (pointId) {
-    case 'left':
-      return { x: shape.x, y: cy }
-    case 'top':
-      return { x: cx, y: shape.y }
-    case 'right':
-      return { x: shape.x + 120, y: cy }
-    case 'bottom':
-      return { x: cx, y: shape.y + 80 }
-    default:
-      return { x: cx, y: cy }
-  }
-}
+import { getConnectionPointCoords } from '../modules/ShapeGeometry'
+import { CANVAS_CONFIG } from '../constants/CANVAS_CONFIG'
 
 function generateCurvedPath(x1, y1, x2, y2) {
   const cx = (x1 + x2) / 2
   const cy = (y1 + y2) / 2
-  const offsetY = 50
+  const offsetY = CANVAS_CONFIG.CONNECTION_POINT.curveOffset
   const controlY = cy + offsetY
 
   return `M ${x1} ${y1} Q ${cx} ${controlY} ${x2} ${y2}`

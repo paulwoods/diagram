@@ -1,8 +1,8 @@
-const SHAPE_SIZE = 120
+import { CANVAS_CONFIG } from '../constants/CANVAS_CONFIG'
 
 function renderShapeGeometry(type, x, y, color) {
-  const width = 120
-  const height = 80
+  const width = CANVAS_CONFIG.SHAPE.width
+  const height = CANVAS_CONFIG.SHAPE.height
   const cx = x + width / 2
   const cy = y + height / 2
 
@@ -118,10 +118,10 @@ export default function ShapeElement({
         <rect
           x={x - 3}
           y={y - 3}
-          width={120 + 6}
-          height={80 + 6}
+          width={CANVAS_CONFIG.SHAPE.width + 6}
+          height={CANVAS_CONFIG.SHAPE.height + 6}
           fill="none"
-          stroke="#3b82f6"
+          stroke={CANVAS_CONFIG.COLORS.selection}
           strokeWidth="2"
           strokeDasharray="4,4"
           pointerEvents="none"
@@ -133,10 +133,10 @@ export default function ShapeElement({
         <rect
           x={x - 3}
           y={y - 3}
-          width={120 + 6}
-          height={80 + 6}
+          width={CANVAS_CONFIG.SHAPE.width + 6}
+          height={CANVAS_CONFIG.SHAPE.height + 6}
           fill="none"
-          stroke="#10b981"
+          stroke={CANVAS_CONFIG.COLORS.hover}
           strokeWidth="3"
           pointerEvents="none"
         />
