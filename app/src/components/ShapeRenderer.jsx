@@ -1,5 +1,6 @@
 import { CANVAS_CONFIG } from '../constants/CANVAS_CONFIG'
 import { getConnectionPoints } from '../modules/ShapeGeometry'
+import { useEditingContext } from '../contexts/EditingContext'
 
 function renderShapeGeometry(type, x, y, color) {
   const width = CANVAS_CONFIG.SHAPE.width
@@ -94,6 +95,7 @@ export default function ShapeRenderer({
   const connectionPoints = getConnectionPoints(shape)
   const cx = x + CANVAS_CONFIG.SHAPE.width / 2
   const cy = y + CANVAS_CONFIG.SHAPE.height / 2
+  const editing = useEditingContext()
 
   return (
     <g

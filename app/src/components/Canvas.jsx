@@ -3,6 +3,7 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import ShapeElement from './ShapeElement'
 import Connector from './Connector'
 import EditingModal from './EditingModal'
+import { EditingProvider } from '../contexts/EditingContext'
 import { useShapeDragging } from '../hooks/useShapeDragging'
 import { useCanvasPanning } from '../hooks/useCanvasPanning'
 import { useConnectionCreation } from '../hooks/useConnectionCreation'
@@ -131,17 +132,18 @@ export default function Canvas({
 
   return (
     <div className="canvas-container">
-      <TransformWrapper
-        disablePanning
-        wheel={{ step: 10 }}
-        onTransformed={(instance) => {
-          if (onZoomChange) {
-            onZoomChange(Math.round(instance.state.scale * 100))
-          }
-        }}
-      >
-        <TransformComponent>
-          <svg
+      <EditingProvider value={editing}>
+        <TransformWrapper
+          disablePanning
+          wheel={{ step: 10 }}
+          onTransformed={(instance) => {
+            if (onZoomChange) {
+              onZoomChange(Math.round(instance.state.scale * 100))
+            }
+          }}
+        >
+          <TransformComponent>
+            <svg
             ref={svgRef}
             className="canvas"
             width={CANVAS_CONFIG.CANVAS.width}
@@ -180,10 +182,6 @@ export default function Canvas({
                   e.stopPropagation()
                   onSelectShape(id)
                 }}
-                onEditSubmit={editing.handleEditSubmit}
-                isEditing={editing.editingId === connector.id}
-                editingText={editing.editingText}
-                setEditingText={editing.setEditingText}
               />
             ))}
 
@@ -218,16 +216,13 @@ export default function Canvas({
                 isDraggingConnector={connection.connectionStart !== null}
                 onMouseDown={handleShapeMouseDown}
                 onDoubleClick={handleShapeDoubleClick}
-                onEditSubmit={editing.handleEditSubmit}
-                isEditing={editing.editingId === shape.id}
-                editingText={editing.editingText}
-                setEditingText={editing.setEditingText}
                 onConnectionPointMouseDown={handleConnectionPointMouseDown}
               />
             ))}
           </svg>
         </TransformComponent>
       </TransformWrapper>
+      </EditingProvider>
 
       <EditingModal
         editingId={editing.editingId}

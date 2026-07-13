@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ShapeElement from '../ShapeElement'
+import { EditingProvider } from '../../contexts/EditingContext'
 
 describe('ShapeElement', () => {
   const mockShape = {
@@ -13,23 +14,33 @@ describe('ShapeElement', () => {
     color: '#3b82f6',
   }
 
+  const mockEditing = {
+    editingId: null,
+    editingText: '',
+    handleEditSubmit: () => {},
+  }
+
+  const renderWithEditing = (component) => {
+    return render(
+      <EditingProvider value={mockEditing}>
+        <svg>
+          {component}
+        </svg>
+      </EditingProvider>
+    )
+  }
+
   it('renders shape with label', () => {
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={false}
-          isConnecting={false}
-          isHovered={false}
-          onMouseDown={() => {}}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={() => {}}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={false}
+        isConnecting={false}
+        isHovered={false}
+        onMouseDown={() => {}}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={() => {}}
+      />
     )
 
     expect(container.querySelector('text')).toHaveTextContent('Test Shape')
@@ -39,22 +50,16 @@ describe('ShapeElement', () => {
     const user = userEvent.setup()
     const onMouseDown = vi.fn()
 
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={false}
-          isConnecting={false}
-          isHovered={false}
-          onMouseDown={onMouseDown}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={() => {}}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={false}
+        isConnecting={false}
+        isHovered={false}
+        onMouseDown={onMouseDown}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={() => {}}
+      />
     )
 
     const shapeGroup = container.querySelector('g')
@@ -64,22 +69,16 @@ describe('ShapeElement', () => {
   })
 
   it('shows selection indicator when selected', () => {
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={true}
-          isConnecting={false}
-          isHovered={false}
-          onMouseDown={() => {}}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={() => {}}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={true}
+        isConnecting={false}
+        isHovered={false}
+        onMouseDown={() => {}}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={() => {}}
+      />
     )
 
     const selectionIndicator = Array.from(container.querySelectorAll('rect')).find(
@@ -89,22 +88,16 @@ describe('ShapeElement', () => {
   })
 
   it('shows connection points when selected', () => {
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={true}
-          isConnecting={false}
-          isHovered={false}
-          onMouseDown={() => {}}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={() => {}}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={true}
+        isConnecting={false}
+        isHovered={false}
+        onMouseDown={() => {}}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={() => {}}
+      />
     )
 
     const circles = container.querySelectorAll('circle')
@@ -113,22 +106,16 @@ describe('ShapeElement', () => {
   })
 
   it('shows hover indicator when hovered during connection', () => {
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={false}
-          isConnecting={false}
-          isHovered={true}
-          onMouseDown={() => {}}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={() => {}}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={false}
+        isConnecting={false}
+        isHovered={true}
+        onMouseDown={() => {}}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={() => {}}
+      />
     )
 
     const hoverIndicator = Array.from(container.querySelectorAll('rect')).find((rect) =>
@@ -141,22 +128,16 @@ describe('ShapeElement', () => {
     const user = userEvent.setup()
     const onConnectionPointMouseDown = vi.fn()
 
-    const { container } = render(
-      <svg>
-        <ShapeElement
-          shape={mockShape}
-          isSelected={true}
-          isConnecting={false}
-          isHovered={false}
-          onMouseDown={() => {}}
-          onDoubleClick={() => {}}
-          onEditSubmit={() => {}}
-          isEditing={false}
-          editingText=""
-          setEditingText={() => {}}
-          onConnectionPointMouseDown={onConnectionPointMouseDown}
-        />
-      </svg>
+    const { container } = renderWithEditing(
+      <ShapeElement
+        shape={mockShape}
+        isSelected={true}
+        isConnecting={false}
+        isHovered={false}
+        onMouseDown={() => {}}
+        onDoubleClick={() => {}}
+        onConnectionPointMouseDown={onConnectionPointMouseDown}
+      />
     )
 
     const circles = container.querySelectorAll('circle')
@@ -170,22 +151,16 @@ describe('ShapeElement', () => {
     const shapeTypes = ['rectangle', 'diamond', 'oval', 'circle']
 
     shapeTypes.forEach((type) => {
-      const { container } = render(
-        <svg>
-          <ShapeElement
-            shape={{ ...mockShape, type }}
-            isSelected={false}
-            isConnecting={false}
-            isHovered={false}
-            onMouseDown={() => {}}
-            onDoubleClick={() => {}}
-            onEditSubmit={() => {}}
-            isEditing={false}
-            editingText=""
-            setEditingText={() => {}}
-            onConnectionPointMouseDown={() => {}}
-          />
-        </svg>
+      const { container } = renderWithEditing(
+        <ShapeElement
+          shape={{ ...mockShape, type }}
+          isSelected={false}
+          isConnecting={false}
+          isHovered={false}
+          onMouseDown={() => {}}
+          onDoubleClick={() => {}}
+          onConnectionPointMouseDown={() => {}}
+        />
       )
 
       const shapeElement = container.querySelector('g')

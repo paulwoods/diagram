@@ -30,10 +30,6 @@ export default function Connector({
   isSelected,
   onDoubleClick,
   onClick,
-  onEditSubmit,
-  isEditing,
-  editingText,
-  setEditingText,
 }) {
   const sourceShape = shapes.find((s) => s.id === connector.source)
   const targetShape = shapes.find((s) => s.id === connector.target)

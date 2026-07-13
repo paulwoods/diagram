@@ -8,10 +8,6 @@ export default function ShapeElement({
   isDraggingConnector,
   onMouseDown,
   onDoubleClick,
-  onEditSubmit,
-  isEditing,
-  editingText,
-  setEditingText,
   onConnectionPointMouseDown,
 }) {
   return (
