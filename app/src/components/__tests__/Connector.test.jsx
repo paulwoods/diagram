@@ -114,10 +114,10 @@ describe('Connector', () => {
       </svg>
     )
 
-    const path = container.querySelector('path')
-    if (path) {
-      fireEvent.click(path)
-      expect(onClick).toHaveBeenCalled()
+    const g = container.querySelector('g')
+    if (g) {
+      fireEvent.mouseDown(g)
+      expect(onClick).toHaveBeenCalledWith(mockConnector.id, expect.any(Object))
     }
   })
 
