@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import ShapeElement from './ShapeElement'
 import Connector from './Connector'
+import EditingModal from './EditingModal'
 import { useShapeDragging } from '../hooks/useShapeDragging'
 import { useCanvasPanning } from '../hooks/useCanvasPanning'
 import { useConnectionCreation } from '../hooks/useConnectionCreation'
@@ -47,11 +48,8 @@ export default function Canvas({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedId, shapes, connectors, onDeleteShape, onDeleteConnector])
 
-  const isPointOverShapeOrConnector = (point) => {
-    const isOverShape = shapes.some((shape) => isPointInShape(point, shape))
-    if (isOverShape) return true
-    return false
-  }
+  const isPointOverShapeOrConnector = (point) =>
+    shapes.some((shape) => isPointInShape(point, shape))
 
   const getSVGCoordinates = (e) => {
     const svg = svgRef.current
@@ -131,15 +129,6 @@ export default function Canvas({
     editing.handleConnectorDoubleClick(connectorId, currentLabel)
   }
 
-  const handleEditSubmit = () => {
-    editing.handleEditSubmit()
-  }
-
-  const handleConnectorClick = (connectorId, e) => {
-    e.stopPropagation()
-    onSelectShape(connectorId)
-  }
-
   return (
     <div className="canvas-container">
       <TransformWrapper
@@ -187,8 +176,11 @@ export default function Canvas({
                 shapes={shapes}
                 isSelected={selectedId === connector.id}
                 onDoubleClick={handleConnectorDoubleClick}
-                onClick={handleConnectorClick}
-                onEditSubmit={handleEditSubmit}
+                onClick={(id, e) => {
+                  e.stopPropagation()
+                  onSelectShape(id)
+                }}
+                onEditSubmit={editing.handleEditSubmit}
                 isEditing={editing.editingId === connector.id}
                 editingText={editing.editingText}
                 setEditingText={editing.setEditingText}
@@ -226,7 +218,7 @@ export default function Canvas({
                 isDraggingConnector={connection.connectionStart !== null}
                 onMouseDown={handleShapeMouseDown}
                 onDoubleClick={handleShapeDoubleClick}
-                onEditSubmit={handleEditSubmit}
+                onEditSubmit={editing.handleEditSubmit}
                 isEditing={editing.editingId === shape.id}
                 editingText={editing.editingText}
                 setEditingText={editing.setEditingText}
@@ -237,28 +229,14 @@ export default function Canvas({
         </TransformComponent>
       </TransformWrapper>
 
-      {editing.editingId && editing.editingType && (
-        <div className="edit-modal-overlay" onClick={editing.handleEditCancel}>
-          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit Label</h3>
-            <input
-              autoFocus
-              type="text"
-              value={editing.editingText}
-              onChange={(e) => editing.setEditingText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleEditSubmit()
-                if (e.key === 'Escape') editing.handleEditCancel()
-              }}
-              placeholder="Enter label"
-            />
-            <div className="modal-buttons">
-              <button onClick={handleEditSubmit}>Done</button>
-              <button onClick={editing.handleEditCancel}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditingModal
+        editingId={editing.editingId}
+        editingType={editing.editingType}
+        editingText={editing.editingText}
+        setEditingText={editing.setEditingText}
+        onSubmit={editing.handleEditSubmit}
+        onCancel={editing.handleEditCancel}
+      />
     </div>
   )
 }
