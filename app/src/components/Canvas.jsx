@@ -26,6 +26,9 @@ export default function Canvas({
   const [editingType, setEditingType] = useState(null)
   const [isPanning, setIsPanning] = useState(false)
   const [panStart, setPanStart] = useState(null)
+  const [isDraggingShape, setIsDraggingShape] = useState(false)
+  const [draggedShapeId, setDraggedShapeId] = useState(null)
+  const [dragShapeStart, setDragShapeStart] = useState(null)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -76,6 +79,21 @@ export default function Canvas({
   }
 
   const handleCanvasMouseMove = (e) => {
+    // Handle shape dragging
+    if (isDraggingShape && draggedShapeId && dragShapeStart) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const currentX = e.clientX - rect.left
+      const currentY = e.clientY - rect.top
+
+      const dx = currentX - dragShapeStart.x
+      const dy = currentY - dragShapeStart.y
+
+      const newX = dragShapeStart.shapeX + dx
+      const newY = dragShapeStart.shapeY + dy
+
+      onUpdateShape(draggedShapeId, { x: newX, y: newY })
+    }
+
     if (isPanning && panStart) {
       const dx = e.clientX - panStart.x
       const dy = e.clientY - panStart.y
@@ -113,6 +131,12 @@ export default function Canvas({
   }
 
   const handleCanvasMouseUp = (e) => {
+    if (isDraggingShape) {
+      setIsDraggingShape(false)
+      setDraggedShapeId(null)
+      setDragShapeStart(null)
+    }
+
     if (isPanning) {
       setIsPanning(false)
       setPanStart(null)
@@ -138,8 +162,20 @@ export default function Canvas({
   const handleShapeMouseDown = (shapeId, e) => {
     e.stopPropagation()
     onSelectShape(shapeId)
-    setConnectionStart(shapeId)
-    setDragEndpoint(null)
+
+    // Left button = start shape drag
+    if (e.button === 0) {
+      const rect = svgRef.current.getBoundingClientRect()
+      setIsDraggingShape(true)
+      setDraggedShapeId(shapeId)
+      setDragShapeStart({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        shapeX: shapes.find((s) => s.id === shapeId)?.x || 0,
+        shapeY: shapes.find((s) => s.id === shapeId)?.y || 0,
+      })
+    }
+
     e.preventDefault()
   }
 
@@ -207,7 +243,10 @@ export default function Canvas({
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             onMouseLeave={handleCanvasMouseUp}
-            style={{ cursor: isPanning ? 'grabbing' : 'default' }}
+            style={{
+              cursor: isPanning ? 'grabbing' : isDraggingShape ? 'grabbing' : 'default',
+              userSelect: 'none',
+            }}
           >
             <defs>
               <marker
