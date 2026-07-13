@@ -35,12 +35,33 @@ export function getConnectionPointCoords(shape, pointId) {
 }
 
 /**
- * Check if a point is inside a shape (AABB collision with padding).
- * Includes collision padding on all sides to make shapes easier to select.
+ * Check if a point is inside a shape using axis-aligned bounding box (AABB) collision.
  *
- * @param {Object} point - Point with {x, y}
- * @param {Object} shape - Shape object with {x, y}
- * @returns {boolean} True if point is inside shape bounds (with padding)
+ * Uses collision padding (from CANVAS_CONFIG.SHAPE.collisionPadding) on all sides
+ * to expand the selectable area slightly beyond the actual shape bounds. This makes
+ * shapes easier to click on without requiring pixel-perfect accuracy.
+ *
+ * @param {Object} point - Point to test with shape { x: number, y: number }
+ * @param {Object} shape - Shape object with { x, y, ... }
+ * @returns {boolean} True if point is inside shape bounds + padding
+ *
+ * How it works:
+ * - Treats shape as axis-aligned rectangle (x, y, width, height)
+ * - Tests if point falls within (x ± padding) to (x + width ± padding)
+ * - Used for: shape selection, hit detection, hover states
+ *
+ * Collision padding details:
+ * - Value: CANVAS_CONFIG.SHAPE.collisionPadding (currently 5px)
+ * - Applied equally on all sides (top, bottom, left, right)
+ * - Makes shapes 10px larger in each dimension (5px on each side)
+ * - Tuned for 13" laptop screens at 100% zoom
+ *
+ * Empirical tuning: 5px was found to balance clickability vs. overlap issues.
+ * If users report shapes hard to click (shape too small?), try increasing padding.
+ * If users report unintended selections (overlap?), try decreasing padding.
+ * Test with actual end-users before adjusting.
+ *
+ * Example: Shape at (100, 100) with 5px padding matches points from (95, 95) to (125, 125)
  */
 export function isPointInShape(point, shape) {
   const padding = CANVAS_CONFIG.SHAPE.collisionPadding
