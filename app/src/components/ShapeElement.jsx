@@ -90,8 +90,18 @@ export default function ShapeElement({
   isEditing,
   editingText,
   setEditingText,
+  onConnectionPointMouseDown,
 }) {
   const { id, type, x, y, label, color } = shape
+  const cx = x + 60
+  const cy = y + 40
+
+  const connectionPoints = [
+    { id: 'left', x: x, y: cy },
+    { id: 'top', x: cx, y: y },
+    { id: 'right', x: x + 120, y: cy },
+    { id: 'bottom', x: cx, y: y + 80 },
+  ]
 
   return (
     <g
@@ -156,6 +166,25 @@ export default function ShapeElement({
       >
         {label}
       </text>
+
+      {/* Connection points */}
+      {isSelected &&
+        connectionPoints.map((point) => (
+          <circle
+            key={`point-${point.id}`}
+            cx={point.x}
+            cy={point.y}
+            r="5"
+            fill="#3b82f6"
+            stroke="#1f2937"
+            strokeWidth="1"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              onConnectionPointMouseDown(id, point.id, e)
+            }}
+            style={{ cursor: 'crosshair' }}
+          />
+        ))}
     </g>
   )
 }

@@ -20,6 +20,7 @@ export default function Canvas({
 }) {
   const svgRef = useRef(null)
   const [connectionStart, setConnectionStart] = useState(null)
+  const [connectionPointId, setConnectionPointId] = useState(null)
   const [dragEndpoint, setDragEndpoint] = useState(null)
   const [hoveredShapeId, setHoveredShapeId] = useState(null)
   const [editingId, setEditingId] = useState(null)
@@ -152,6 +153,7 @@ export default function Canvas({
       onAddConnector(connectionStart, hoveredShapeId)
     }
     setConnectionStart(null)
+    setConnectionPointId(null)
     setDragEndpoint(null)
     setHoveredShapeId(null)
   }
@@ -173,11 +175,13 @@ export default function Canvas({
       })
     }
 
-    // Right button = start connection
-    if (e.button === 2) {
-      setConnectionStart(shapeId)
-    }
+    e.preventDefault()
+  }
 
+  const handleConnectionPointMouseDown = (shapeId, pointId, e) => {
+    e.stopPropagation()
+    setConnectionStart(shapeId)
+    setConnectionPointId(pointId)
     e.preventDefault()
   }
 
@@ -288,10 +292,29 @@ export default function Canvas({
             {connectionStart && dragEndpoint && (() => {
               const startShape = shapes.find((s) => s.id === connectionStart)
               if (!startShape) return null
+
+              const getConnectionPointCoords = () => {
+                const cx = startShape.x + 60
+                const cy = startShape.y + 40
+                switch (connectionPointId) {
+                  case 'left':
+                    return { x: startShape.x, y: cy }
+                  case 'top':
+                    return { x: cx, y: startShape.y }
+                  case 'right':
+                    return { x: startShape.x + 120, y: cy }
+                  case 'bottom':
+                    return { x: cx, y: startShape.y + 80 }
+                  default:
+                    return { x: cx, y: cy }
+                }
+              }
+
+              const startCoord = getConnectionPointCoords()
               return (
                 <line
-                  x1={startShape.x + 60}
-                  y1={startShape.y + 40}
+                  x1={startCoord.x}
+                  y1={startCoord.y}
                   x2={dragEndpoint.x}
                   y2={dragEndpoint.y}
                   stroke="#9ca3af"
@@ -316,6 +339,7 @@ export default function Canvas({
                 isEditing={editingId === shape.id}
                 editingText={editingText}
                 setEditingText={setEditingText}
+                onConnectionPointMouseDown={handleConnectionPointMouseDown}
               />
             ))}
           </svg>
