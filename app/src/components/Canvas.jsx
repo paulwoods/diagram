@@ -363,6 +363,7 @@ export default function Canvas({
                 isSelected={selectedId === shape.id}
                 isConnecting={connectionStart === shape.id}
                 isHovered={hoveredShapeId === shape.id}
+                isDraggingConnector={connectionStart !== null}
                 onMouseDown={handleShapeMouseDown}
                 onDoubleClick={handleShapeDoubleClick}
                 onEditSubmit={handleEditSubmit}

@@ -84,6 +84,7 @@ export default function ShapeElement({
   isSelected,
   isConnecting,
   isHovered,
+  isDraggingConnector,
   onMouseDown,
   onDoubleClick,
   onEditSubmit,
@@ -168,7 +169,7 @@ export default function ShapeElement({
       </text>
 
       {/* Connection points */}
-      {isSelected &&
+      {(isSelected || isDraggingConnector) &&
         connectionPoints.map((point) => (
           <circle
             key={`point-${point.id}`}
