@@ -56,14 +56,14 @@ export const CANVAS_CONFIG = {
    * Used for selection indicators, hover states, and connector paths.
    */
   COLORS: {
-    /** Selection indicator (dashed border around selected shapes) */
-    selection: '#3b82f6',
+    /** Selection indicator (dashed redline border around selected shapes) */
+    selection: 'var(--selection-color)',
     /** Hover state when over target during connection drag */
-    hover: '#10b981',
-    /** Default connector path color (gray) */
-    connectorPath: '#9ca3af',
-    /** Active/hovered connector path color (green) */
-    connectorPathActive: '#10b981',
+    hover: 'var(--hover-color)',
+    /** Default connector path color */
+    connectorPath: 'var(--connector-color)',
+    /** Active/hovered connector path color */
+    connectorPathActive: 'var(--hover-color)',
   },
 }
 

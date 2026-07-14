@@ -99,7 +99,7 @@ describe('Toolbar', () => {
     expect(onToggleTheme).toHaveBeenCalled()
   })
 
-  it('shows moon icon in light mode and sun icon in dark mode', () => {
+  it('shows Blueprint label in light mode and Vellum label in dark mode', () => {
     const { rerender } = render(
       <Toolbar
         selectedShapeType={null}
@@ -112,7 +112,7 @@ describe('Toolbar', () => {
       />
     )
 
-    expect(screen.getByText('🌙')).toBeInTheDocument()
+    expect(screen.getByText('Blueprint')).toBeInTheDocument()
 
     rerender(
       <Toolbar
@@ -126,7 +126,7 @@ describe('Toolbar', () => {
       />
     )
 
-    expect(screen.getByText('☀️')).toBeInTheDocument()
+    expect(screen.getByText('Vellum')).toBeInTheDocument()
   })
 
   it('renders Export and Import buttons', () => {

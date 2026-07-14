@@ -3,13 +3,14 @@ import Toolbar from './components/Toolbar'
 import Canvas from './components/Canvas'
 import './App.css'
 
+/* Drafting-ink hues: mid-value so 2px linework reads on both vellum and blueprint */
 const SHAPE_COLORS = {
-  rectangle: '#3b82f6',
-  diamond: '#f59e0b',
-  oval: '#10b981',
-  parallelogram: '#a855f7',
-  roundedRectangle: '#ef4444',
-  circle: '#06b6d4',
+  rectangle: '#3d6c9e',
+  diamond: '#b0771f',
+  oval: '#41805f',
+  parallelogram: '#7c58a0',
+  roundedRectangle: '#ad5140',
+  circle: '#33808d',
 }
 
 export default function App() {

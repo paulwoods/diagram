@@ -168,7 +168,22 @@ export default function Canvas({
               >
                 <polygon points="0 0, 10 3, 0 6" fill="var(--arrowhead-color)" />
               </marker>
+              <pattern id="grid-minor" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 H 0 V 20" fill="none" stroke="var(--grid-minor)" strokeWidth="1" />
+              </pattern>
+              <pattern id="grid-major" width="100" height="100" patternUnits="userSpaceOnUse">
+                <rect width="100" height="100" fill="url(#grid-minor)" />
+                <path d="M 100 0 H 0 V 100" fill="none" stroke="var(--grid-major)" strokeWidth="1" />
+              </pattern>
             </defs>
+
+            {/* Drafting grid (pans and zooms with the drawing) */}
+            <rect
+              width={CANVAS_CONFIG.CANVAS.width}
+              height={CANVAS_CONFIG.CANVAS.height}
+              fill="url(#grid-major)"
+              pointerEvents="none"
+            />
 
             {/* Connectors */}
             {connectors.map((connector) => (

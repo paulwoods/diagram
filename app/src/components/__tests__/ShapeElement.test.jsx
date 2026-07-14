@@ -119,7 +119,7 @@ describe('ShapeElement', () => {
     )
 
     const hoverIndicator = Array.from(container.querySelectorAll('rect')).find((rect) =>
-      rect.getAttribute('stroke')?.includes('10b981')
+      rect.getAttribute('stroke')?.includes('--hover-color')
     )
     expect(hoverIndicator).toBeInTheDocument()
   })

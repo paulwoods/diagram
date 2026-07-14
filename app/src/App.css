@@ -1,35 +1,43 @@
+/* Vellum (light): cool technical drafting paper */
 :root {
-  --bg-primary: #fff;
-  --bg-secondary: #f9fafb;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
-  --button-bg: #fff;
-  --button-hover: #f3f4f6;
-  --button-active: #e5e7eb;
-  --canvas-bg: #f9fafb;
-  --shape-border: #1f2937;
-  --selection-color: #3b82f6;
-  --hover-color: #10b981;
-  --connector-color: #4b5563;
-  --arrowhead-color: #1f2937;
+  --bg-primary: #fafbf7;
+  --bg-secondary: #f2f3ef;
+  --text-primary: #2b3330;
+  --text-secondary: #6b776f;
+  --border-color: #d3d9ce;
+  --button-bg: #f2f3ef;
+  --button-hover: #e4e9e0;
+  --button-active: #d8e0d4;
+  --canvas-bg: #f2f3ef;
+  --grid-minor: #e3e7de;
+  --grid-major: #d2d9cc;
+  --shape-border: #2b3330;
+  --accent-color: #4a7a6d;
+  --selection-color: #c2452d;
+  --hover-color: #4a7a6d;
+  --connector-color: #43514b;
+  --arrowhead-color: #43514b;
 }
 
+/* Blueprint (dark): Prussian paper, chalk linework */
 .app.dark-mode {
-  --bg-primary: #1f2937;
-  --bg-secondary: #111827;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --border-color: #374151;
-  --button-bg: #374151;
-  --button-hover: #4b5563;
-  --button-active: #6b7280;
-  --canvas-bg: #111827;
-  --shape-border: #e5e7eb;
-  --selection-color: #60a5fa;
-  --hover-color: #10b981;
-  --connector-color: #9ca3af;
-  --arrowhead-color: #e5e7eb;
+  --bg-primary: #10263b;
+  --bg-secondary: #16304a;
+  --text-primary: #dce8f2;
+  --text-secondary: #8fa9be;
+  --border-color: #2a4a68;
+  --button-bg: #17334e;
+  --button-hover: #1e3e5d;
+  --button-active: #26496b;
+  --canvas-bg: #16304a;
+  --grid-minor: #1f3d5b;
+  --grid-major: #294a6a;
+  --shape-border: #dce8f2;
+  --accent-color: #7fb5a4;
+  --selection-color: #e56a4b;
+  --hover-color: #7fb5a4;
+  --connector-color: #a8c3d9;
+  --arrowhead-color: #a8c3d9;
 }
 
 .app {

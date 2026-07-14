@@ -2,80 +2,43 @@ import { CANVAS_CONFIG } from '../constants/CANVAS_CONFIG'
 import { getConnectionPoints } from '../modules/ShapeGeometry'
 import { useEditingContext } from '../contexts/EditingContext'
 
+/* Shapes render as ink linework: the shape's color is its stroke, with a
+   light tint fill so the drafting grid shows through like traced paper. */
 function renderShapeGeometry(type, x, y, color) {
   const width = CANVAS_CONFIG.SHAPE.width
   const height = CANVAS_CONFIG.SHAPE.height
   const cx = x + width / 2
   const cy = y + height / 2
+  const inkStyle = {
+    fill: color,
+    fillOpacity: 0.14,
+    stroke: color,
+    strokeWidth: 2,
+  }
 
   switch (type) {
     case 'rectangle':
-      return (
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
-          rx="4"
-        />
-      )
+      return <rect x={x} y={y} width={width} height={height} rx="4" {...inkStyle} />
     case 'diamond':
       return (
         <polygon
           points={`${cx},${y} ${x + width},${cy} ${cx},${y + height} ${x},${cy}`}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
+          {...inkStyle}
         />
       )
     case 'oval':
-      return (
-        <ellipse
-          cx={cx}
-          cy={cy}
-          rx={width / 2}
-          ry={height / 2}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
-        />
-      )
+      return <ellipse cx={cx} cy={cy} rx={width / 2} ry={height / 2} {...inkStyle} />
     case 'parallelogram':
       return (
         <polygon
           points={`${x + 20},${y} ${x + width},${y} ${x + width - 20},${y + height} ${x},${y + height}`}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
+          {...inkStyle}
         />
       )
     case 'roundedRectangle':
-      return (
-        <rect
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
-          rx="12"
-        />
-      )
+      return <rect x={x} y={y} width={width} height={height} rx="12" {...inkStyle} />
     case 'circle':
-      return (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={Math.min(width, height) / 2}
-          fill={color}
-          stroke="#1f2937"
-          strokeWidth="2"
-        />
-      )
+      return <circle cx={cx} cy={cy} r={Math.min(width, height) / 2} {...inkStyle} />
     default:
       return null
   }
@@ -141,7 +104,7 @@ export default function ShapeRenderer({
           cx={cx}
           cy={cy}
           r="5"
-          fill="#3b82f6"
+          fill="var(--hover-color)"
           pointerEvents="none"
         />
       )}
@@ -153,7 +116,8 @@ export default function ShapeRenderer({
         textAnchor="middle"
         dominantBaseline="middle"
         fontSize="14"
-        fill="#fff"
+        fill="var(--text-primary)"
+        fontFamily="'IBM Plex Sans', sans-serif"
         fontWeight="500"
         pointerEvents="none"
         style={{ userSelect: 'none' }}
@@ -169,9 +133,9 @@ export default function ShapeRenderer({
             cx={point.x}
             cy={point.y}
             r="5"
-            fill="#3b82f6"
-            stroke="#1f2937"
-            strokeWidth="1"
+            fill="var(--hover-color)"
+            stroke="var(--canvas-bg)"
+            strokeWidth="1.5"
             onMouseDown={(e) => {
               e.stopPropagation()
               onConnectionPointMouseDown(id, point.id, e)

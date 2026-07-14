@@ -107,7 +107,7 @@ export default function Connector({
         <path
           d={pathD}
           fill="none"
-          stroke="#3b82f6"
+          stroke="var(--selection-color)"
           strokeWidth="5"
           opacity="0.5"
           pointerEvents="none"
@@ -123,8 +123,8 @@ export default function Connector({
             y={midpoint.y - CANVAS_CONFIG.CONNECTOR_LABEL.height / 2}
             width={CANVAS_CONFIG.CONNECTOR_LABEL.width}
             height={CANVAS_CONFIG.CONNECTOR_LABEL.height}
-            fill="#fff"
-            stroke="#d1d5db"
+            fill="var(--bg-primary)"
+            stroke="var(--border-color)"
             strokeWidth="1"
             rx="4"
             pointerEvents="none"
@@ -135,7 +135,8 @@ export default function Connector({
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="12"
-            fill="#374151"
+            fill="var(--text-primary)"
+            fontFamily="'IBM Plex Sans', sans-serif"
             fontWeight="500"
             pointerEvents="none"
             style={{ userSelect: 'none' }}
